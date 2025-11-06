@@ -1,4 +1,4 @@
-💎 NovaCore
+💎 NovaCore V1
 
 A sleek, animated Tampermonkey client overlay for Miniblox.io, focused on performance, customization, and a futuristic look.
 
@@ -17,7 +17,7 @@ Dynamic hint text and CSS-based transitions
 
 🧭 Menu System
 
-Toggleable menu overlay (press \ key)
+Toggleable menu overlay (press \ key) Still Thinking of doing a bind thing.
 
 Blurred background with neon theme
 
@@ -29,6 +29,7 @@ Module	Description
 🖱️ CPS Counter	Tracks your clicks per second (draggable)
 ⏰ Real Time Clock	Shows the current local time (bottom-right)
 🔲 Auto Fullscreen	One-click fullscreen toggle
+(For Now)
 
 Each module can be toggled directly from the NovaCore menu.
 
@@ -64,3 +65,5 @@ Visit Miniblox.io
 .
 
 ✅ NovaCore will automatically load — watch the intro animation, then press \ to open the menu.
+
+More Updates Soon!
