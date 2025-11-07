@@ -2,7 +2,7 @@
 // @name         NovaCore
 // @namespace    http://tampermonkey.net/
 // @version      2.0
-// @description  Novacore with playtime tracker, binding system, and scroll menu
+// @description  Make Your Miniblox GamePlay Better With Novacore! (Not a Hacked Client)
 // @author       (Cant reveal who im)
 // @match        *://*.miniblox.io/*
 // @grant        none
