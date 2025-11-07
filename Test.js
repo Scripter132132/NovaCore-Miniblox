@@ -726,10 +726,7 @@
     realTimeBtn.textContent = 'Real Time';
     menuContent.appendChild(realTimeBtn);
 
-    const playerMonitorBtn = document.createElement('button');
-    playerMonitorBtn.className = 'nova-menu-btn';
-    playerMonitorBtn.textContent = 'Player Monitor';
-    menuContent.appendChild(playerMonitorBtn);
+
 
     const fullscreenBtn = document.createElement('button');
     fullscreenBtn.className = 'nova-menu-btn';
@@ -1292,7 +1289,7 @@
 
 })();
 
-// ===== FPS Booster=====
+// ===== FPS Bypass/Booster=====
 (function() {
     'use strict';
     const originalRAF = window.requestAnimationFrame;
