@@ -1,69 +1,99 @@
-💎 NovaCore V1
+🌌 NovaCore
 
-A sleek, animated Tampermonkey client overlay for Miniblox.io, focused on performance, customization, and a futuristic look.
+Version: 1.0
+Platform: Tampermonkey
 
-🚀 Overview
+Game Compatibility: miniblox.io
 
-NovaCore is a client-side enhancement for Miniblox.io that adds a stylish animated UI, draggable performance counters, and utility tools — all wrapped in a clean neon design.
+Author: (Can't reveal yet)
+
+🧩 Overview
+
+NovaCore is a custom Tampermonkey client script designed for miniblox.io, offering a polished and feature-rich user experience.
+It includes a playtime tracker, interactive menu system, customizable keybinds, and utility overlays such as FPS, CPS, and Real-Time counters — all in a sleek cyber-themed interface.
 
 ✨ Features
-🎬 Intro & Design
+🕹️ Interactive Menu
 
-Smooth intro animation with glowing text and checkmarks
+Toggle with a customizable keybind (default: \)
 
-Persistent NovaCore💎 header
+Neon-themed UI with animated transitions
 
-Dynamic hint text and CSS-based transitions
+Persistent header with client branding
 
-🧭 Menu System
+⏱️ Playtime Tracker
 
-Toggleable menu overlay (press \ key) Still Thinking of doing a bind thing.
+Tracks total and session playtime automatically
 
-Blurred background with neon theme
+Displays total duration in days, hours, minutes, and seconds
 
-Animated buttons and modular design for future add-ons
+Earns a “gold theme” when reaching 10+ hours of total use
 
-⚙️ Built-in Modules
-Module	Description
-🖥️ FPS Counter	Displays live FPS in a draggable box
-🖱️ CPS Counter	Tracks your clicks per second (draggable)
-⏰ Real Time Clock	Shows the current local time (bottom-right)
-🔲 Auto Fullscreen	One-click fullscreen toggle
-(For Now)
+⚙️ Binding System
 
-Each module can be toggled directly from the NovaCore menu.
+Rebind the menu toggle key directly from the UI
 
-🎨 Visual Style
+Saves preferences in localStorage (persistent between sessions)
 
-Uses CSS @keyframes for smooth intros and transitions
+📊 Utility Counters
+Feature	Description
+FPS Counter	Real-time framerate display; draggable UI element
+CPS Counter	Tracks mouse clicks per second; draggable
+Real Time Clock	Displays system time (with tooltip) for fullscreen sessions
+Auto Fullscreen	Toggle fullscreen mode directly from the menu
+💾 Installation
 
-Google Font: Press Start 2P
+Install Tampermonkey (if not already):
 
-Neon cyan and red color palette
+Chrome Web Store
 
-Glass-like overlays with glowing outlines
+Firefox Add-ons
 
-The interface is designed to feel responsive and futuristic.
+Edge Add-ons
 
-⌨️ Controls
-Key	Action
-\	Open / Close the NovaCore menu
-ESC	(Browser/Game default — exits fullscreen)
-🧩 Installation
-🦝 Using Tampermonkey
+Add the Script:
 
-Install Tampermonkey
- for your browser.
+Open Tampermonkey → Create a new script
 
-Click “Create a new script”.
+Paste the entire contents of NovaCore.user.js
 
-Paste the full NovaCore script.
+Save (Ctrl + S)
 
-Save the script (Ctrl + S or File → Save).
+Visit miniblox.io
 
-Visit Miniblox.io
-.
+The NovaCore intro animation will play
 
-✅ NovaCore will automatically load — watch the intro animation, then press \ to open the menu.
+After that, press \ to open the NovaCore Menu
 
-More Updates Soon!
+🧠 Usage Guide
+Action	Description
+\	Open/Close the NovaCore menu
+“Menu Keybind” section	Change the key used to open the menu
+“FPS Counter”	Show or hide FPS tracker
+“CPS Counter”	Show or hide CPS tracker
+“Real Time”	Toggle real-time clock
+“Auto Fullscreen”	Toggle fullscreen mode
+🗃️ Data Persistence
+
+NovaCore stores user preferences and playtime data in localStorage:
+
+novacore_playtime → total accumulated playtime
+
+novacore_menuKey → custom menu toggle key
+
+These persist across sessions unless manually cleared in browser storage.
+
+🖌️ Visual Design
+
+NovaCore uses:
+
+Retro neon theming inspired by synthwave/cyberpunk
+
+Google Fonts — Press Start 2P
+
+Custom CSS animations for smooth transitions and intro effects
+
+🧾 License
+
+This project is shared for educational and personal use only.
+Do not redistribute or claim ownership without permission from the author.
