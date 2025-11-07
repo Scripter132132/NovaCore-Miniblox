@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         NovaCore
 // @namespace    http://tampermonkey.net/
-// @version      1.12
-// @description  Novacore not done yet
+// @version      2.0
+// @description  Novacore with playtime tracker, binding system, and scroll menu
 // @author       (Cant reveal who im)
 // @match        *://*.miniblox.io/*
 // @grant        none
@@ -10,6 +10,19 @@
 
 (function() {
     'use strict';
+
+    function loadData(key, defaultValue) {
+        const saved = localStorage.getItem(`novacore_${key}`);
+        return saved ? JSON.parse(saved) : defaultValue;
+    }
+
+    function saveData(key, value) {
+        localStorage.setItem(`novacore_${key}`, JSON.stringify(value));
+    }
+
+    let totalPlaytime = loadData('playtime', 0);
+    let sessionStart = Date.now();
+    let menuKey = loadData('menuKey', '\\');
 
     const style = document.createElement('style');
     style.textContent = `
@@ -193,8 +206,21 @@
         margin-bottom: 30px;
     }
 
+    #nova-menu-header.gold {
+        color: #ffd700;
+        text-shadow:
+            0 0 8px #ffd700,
+            0 0 20px #ffd700,
+            0 0 30px #ffd700,
+            0 0 40px #ffd700,
+            0 0 50px #ffd700;
+    }
+
     #nova-menu-content {
         width: 320px;
+        max-height: 70vh;
+        overflow-y: auto;
+        overflow-x: hidden;
         background: #111a;
         border-radius: 16px;
         padding: 24px;
@@ -207,6 +233,38 @@
         display: flex;
         flex-direction: column;
         gap: 14px;
+    }
+
+    #nova-menu-content.gold {
+        box-shadow:
+            0 0 10px #ffd70088,
+            inset 0 0 8px #ffd70044;
+    }
+
+    #nova-menu-content::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #nova-menu-content::-webkit-scrollbar-track {
+        background: #000000aa;
+        border-radius: 8px;
+    }
+
+    #nova-menu-content::-webkit-scrollbar-thumb {
+        background: #00ffff;
+        border-radius: 8px;
+    }
+
+    #nova-menu-content.gold::-webkit-scrollbar-thumb {
+        background: #ffd700;
+    }
+
+    #nova-menu-content::-webkit-scrollbar-thumb:hover {
+        background: #00dddd;
+    }
+
+    #nova-menu-content.gold::-webkit-scrollbar-thumb:hover {
+        background: #ffed4e;
     }
 
     .nova-menu-btn {
@@ -228,24 +286,92 @@
         color: #000;
     }
 
+    .nova-menu-btn.gold {
+        border-color: #ffd700;
+        color: #ffd700;
+    }
+
+    .nova-menu-btn.gold:hover {
+        background: #ffd700;
+        color: #000;
+    }
+
+    .nova-menu-btn.static {
+        background: #000;
+        border: 2px solid #444;
+        color: #888;
+        cursor: default;
+        pointer-events: none;
+        border-radius: 10px 10px 0 0;
+        margin-bottom: -2px;
+    }
+
+    .nova-menu-btn.static:hover {
+        background: #000;
+        color: #888;
+    }
+
+    .nova-section {
+        background: #000000aa;
+        border: 2px solid #444;
+        border-radius: 0 0 10px 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        margin-top: 0;
+    }
+
+    .nova-section.gold {
+        border-color: #ffd700;
+    }
+
+    .nova-info-display {
+        background: #000;
+        border: 2px solid #444;
+        color: #888;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        padding: 12px 20px;
+        border-radius: 10px;
+        user-select: none;
+        text-align: center;
+        cursor: default;
+    }
+
+    .nova-info-display.gold {
+        border-color: #ffd700;
+        color: #ffd700;
+    }
+
     #nova-hint-text {
         position: fixed;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         font-family: 'Press Start 2P', cursive;
-        color: #00ffff;
+        color: white;
         font-size: 1.25rem;
         text-shadow:
-            0 0 4px #00ffff,
-            0 0 10px #00ffff,
-            0 0 14px #00ffff;
+            0 0 4px rgba(255, 255, 255, 0.8),
+            0 0 10px rgba(255, 255, 255, 0.6),
+            0 0 14px rgba(255, 255, 255, 0.4);
         user-select: none;
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.8s ease;
         z-index: 9999999;
         white-space: nowrap;
+        text-align: center;
+        max-width: 90vw;
+        line-height: 1.6;
+    }
+
+    .gold-text {
+        color: #ffd700;
+        text-shadow:
+            0 0 4px #ffd700,
+            0 0 10px #ffd700,
+            0 0 14px #ffd700;
     }
 
     .counter {
@@ -339,7 +465,7 @@
 
     const hintText = document.createElement('div');
     hintText.id = 'nova-hint-text';
-    hintText.textContent = 'Press \\ To Open Menu!';
+    hintText.innerHTML = '<span class="gold-text">Novacore</span>: Press \\ To Open The Menu<br>(Binding System In Menu).';
     document.body.appendChild(hintText);
 
     setTimeout(() => {
@@ -364,6 +490,107 @@
 
     const menuContent = document.createElement('div');
     menuContent.id = 'nova-menu-content';
+
+    const statsBtn = document.createElement('div');
+    statsBtn.className = 'nova-menu-btn static';
+    statsBtn.textContent = '📊 Playtime With Client';
+    menuContent.appendChild(statsBtn);
+
+    const statsSection = document.createElement('div');
+    statsSection.className = 'nova-section';
+
+    const playtimeDisplay = document.createElement('div');
+    playtimeDisplay.className = 'nova-info-display';
+    playtimeDisplay.textContent = '⏱️ 0d 0h 0m 0s';
+    statsSection.appendChild(playtimeDisplay);
+
+    menuContent.appendChild(statsSection);
+
+    const bindingBtn = document.createElement('div');
+    bindingBtn.className = 'nova-menu-btn static';
+    bindingBtn.textContent = '⌨️ Menu Keybind';
+    menuContent.appendChild(bindingBtn);
+
+    const bindingSection = document.createElement('div');
+    bindingSection.className = 'nova-section';
+
+    const bindingInput = document.createElement('input');
+    bindingInput.type = 'text';
+    bindingInput.placeholder = 'Press a key...';
+    bindingInput.value = menuKey;
+    bindingInput.readOnly = true;
+    bindingInput.style.width = '100%';
+    bindingInput.style.background = '#222';
+    bindingInput.style.border = '1px solid #444';
+    bindingInput.style.color = '#ffffff';
+    bindingInput.style.padding = '10px';
+    bindingInput.style.borderRadius = '6px';
+    bindingInput.style.fontFamily = '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
+    bindingInput.style.fontSize = '1rem';
+    bindingInput.style.fontWeight = '700';
+    bindingInput.style.textAlign = 'center';
+    bindingInput.style.outline = 'none';
+    bindingInput.style.cursor = 'pointer';
+    bindingInput.style.boxSizing = 'border-box';
+    bindingSection.appendChild(bindingInput);
+
+    menuContent.appendChild(bindingSection);
+
+    bindingInput.addEventListener('click', () => {
+        bindingInput.value = 'Press any key...';
+        bindingInput.style.color = '#ff4444';
+
+        const keyHandler = (e) => {
+            e.preventDefault();
+            menuKey = e.key;
+            bindingInput.value = menuKey;
+            bindingInput.style.color = '#ffffff';
+            saveData('menuKey', menuKey);
+            window.removeEventListener('keydown', keyHandler);
+        };
+
+        window.addEventListener('keydown', keyHandler, { once: true });
+    });
+
+    function formatPlaytime(ms) {
+        const seconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+
+        const s = seconds % 60;
+        const m = minutes % 60;
+        const h = hours % 24;
+        const d = days;
+
+        return `${d}d ${h}h ${m}m ${s}s`;
+    }
+
+    function updatePlaytimeDisplay() {
+        const currentSession = Date.now() - sessionStart;
+        const total = totalPlaytime + currentSession;
+        playtimeDisplay.textContent = `⏱️ ${formatPlaytime(total)}`;
+
+        const hours = total / (1000 * 60 * 60);
+        if (hours >= 10) {
+            menuHeader.classList.add('gold');
+            menuContent.classList.add('gold');
+            statsSection.classList.add('gold');
+            bindingSection.classList.add('gold');
+            playtimeDisplay.classList.add('gold');
+            bindingInput.style.borderColor = '#ffd700';
+            bindingInput.style.color = '#ffd700';
+            document.querySelectorAll('.nova-menu-btn:not(.static)').forEach(btn => btn.classList.add('gold'));
+        }
+    }
+
+    setInterval(updatePlaytimeDisplay, 1000);
+
+    window.addEventListener('beforeunload', () => {
+        const currentSession = Date.now() - sessionStart;
+        totalPlaytime += currentSession;
+        saveData('playtime', totalPlaytime);
+    });
 
     const fpsBtn = document.createElement('button');
     fpsBtn.className = 'nova-menu-btn';
@@ -491,7 +718,7 @@
     document.body.appendChild(menuOverlay);
 
     window.addEventListener('keydown', e => {
-        if (e.key === '\\') {
+        if (e.key === menuKey) {
             e.preventDefault();
             if (menuOverlay.classList.contains('show')) {
                 menuOverlay.classList.remove('show');
@@ -499,6 +726,7 @@
             } else {
                 menuOverlay.classList.add('show');
                 persistentHeader.classList.remove('visible');
+                updatePlaytimeDisplay();
             }
         }
     });
@@ -671,5 +899,7 @@
             cpsShown = true;
         }
     });
+
+    updatePlaytimeDisplay();
 
 })();
