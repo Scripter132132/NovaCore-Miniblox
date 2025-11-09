@@ -16,6 +16,12 @@
     let sessionStart = Date.now();
     let menuKeybind = loadData('menuKey', '\\');
 
+    // --- Keystrokes State ---
+    let isKeystrokesActive = false;
+    let keystrokescontainer = null;
+    let keyEventListeners = {}; // Store references to listeners
+    const KEY_UP_COLOR = 'rgba(128, 128, 128, 0.7)'; // Translucent Gray for unpressed key
+
     // --- CSS Block ---
     const style = document.createElement('style');
     style.textContent = `
@@ -49,6 +55,41 @@
     @keyframes fadeOut {
         to {opacity: 0;}
     }
+
+    /* --- Keystrokes Module Styles --- */
+    .keystroke-key {
+        position: absolute;
+        color: #ffffff;
+        font-weight: bold;
+        border-radius: 0;
+        background-color: ${KEY_UP_COLOR};
+        border: 3px solid #333333;
+        font-size: 18px;
+        height: 50px;
+        width: 50px;
+        text-align: center;
+        line-height: 50px;
+        font-family: 'Roboto Mono', monospace;
+        z-index: 10000;
+        cursor: grab;
+        user-select: none;
+        transition: background-color 0.1s ease;
+        /* Define the dynamic DOWN color via a CSS variable */
+        --key-down-color: hsl(var(--nova-hue), 80%, 30%); /* Darker, saturated version of custom hue */
+    }
+    #keystrokes-container {
+        width: 300px;
+        height: 230px;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: none;
+        background-color: transparent;
+        z-index: 10000;
+        user-select: none;
+    }
+    /* --- END Keystrokes Module Styles --- */
 
     /* --- Milestone Notification Style --- */
     #nova-milestone-notification {
@@ -84,9 +125,7 @@
     }
 
     .gold-text {
-        /* Basic gold color, enforced */
         color: #FFD700 !important;
-        /* Glow effect, enforced */
         text-shadow:
             0 0 5px rgba(255, 215, 0, 0.8) !important;
             0 0 10px rgba(255, 215, 0, 0.5) !important;
@@ -325,16 +364,18 @@
         position: fixed;
         top: 50px;
         left: 50px;
-        background: rgba(0, 255, 255, 0.85);
+        /* Use HSL variables for the main counter color */
+        background: hsla(var(--nova-hue), var(--nova-saturation), var(--nova-lightness), 0.85);
         color: #000;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         font-weight: 700;
         font-size: 1.25rem;
         padding: 8px 14px;
         border-radius: 12px;
+        /* Use HSL variables for the box-shadow glow */
         box-shadow:
-            0 0 8px #00ffffaa,
-            inset 0 0 8px #00ffff55;
+            0 0 8px hsla(var(--nova-hue), var(--nova-saturation), var(--nova-lightness), 0.7),
+            inset 0 0 8px hsla(var(--nova-hue), var(--nova-saturation), var(--nova-lightness), 0.5);
         user-select: none;
         cursor: grab;
         z-index: 999999999;
@@ -447,7 +488,6 @@
 
             const newKey = e.key;
             updateKeybindDisplay(newKey);
-
             document.removeEventListener('keydown', keyListener);
         };
 
@@ -464,14 +504,12 @@
     // --- UI Elements (Intro) ---
     const overlay = document.createElement('div');
     overlay.id = 'nova-intro';
-
     const button = document.createElement('div');
     button.className = 'downloaded-btn';
     button.textContent = 'Client Downloaded';
 
     const clientNameContainer = document.createElement('div');
     clientNameContainer.className = 'client-name-container';
-
     const clientLogo = document.createElement('img');
     clientLogo.id = 'client-logo';
     clientLogo.src = 'https://raw.githubusercontent.com/Scripter132132/NovaCore-Miniblox/refs/heads/main/NovaCore-Logo.png';
@@ -484,11 +522,13 @@
     overlay.appendChild(clientNameContainer);
     document.body.appendChild(overlay);
 
+    // Placeholder for checkBtn since it was removed from HTML:
+    const checkBtn = document.createElement('span');
+
     setTimeout(() => { checkBtn.style.animation = 'checkPopIn 0.6s forwards ease'; }, 900);
     setTimeout(() => { button.style.animation = 'slideUpOutTop 0.8s ease forwards'; }, 3200);
     setTimeout(() => { clientNameContainer.style.opacity = '1'; clientNameContainer.style.animation = 'fadeScaleIn 0.8s ease forwards'; }, 4000);
     setTimeout(() => {}, 6300);
-
     const persistentHeader = document.createElement('div');
     persistentHeader.id = 'nova-persistent-header';
     persistentHeader.textContent = 'Novacore';
@@ -499,7 +539,6 @@
     document.body.appendChild(hintText);
 
     updateKeybindDisplay(menuKeybind);
-
     // Intro Fade-out
     setTimeout(() => {
         overlay.style.animation = 'fadeOut 1s ease forwards';
@@ -508,11 +547,11 @@
             persistentHeader.classList.add('visible');
             hintText.style.opacity = '1';
             setTimeout(() => {
-                hintText.style.opacity = '0';
+                hintText.style.opacity
+= '0';
             }, 4000);
         }, 1000);
     }, 7000);
-
     // --- UI Elements (Menu) ---
     const menuOverlay = document.createElement('div');
     menuOverlay.id = 'nova-menu-overlay';
@@ -532,7 +571,6 @@
 
     const statsSection = document.createElement('div');
     statsSection.className = 'nova-section';
-
     const playtimeDisplay = document.createElement('div');
     playtimeDisplay.className = 'nova-info-display';
     playtimeDisplay.textContent = '⏱️ 0d 0h 0m 0s';
@@ -546,7 +584,6 @@
 
     const bindingSection = document.createElement('div');
     bindingSection.className = 'nova-section';
-
     const bindingInput = document.createElement('input');
     bindingInput.type = 'text';
     bindingInput.id = 'binding-input';
@@ -568,7 +605,6 @@
     bindingInput.style.boxSizing = 'border-box';
     bindingSection.appendChild(bindingInput);
     menuContent.appendChild(bindingSection);
-
     bindingInput.addEventListener('click', () => {
         bindingInput.value = 'Press any key...';
         bindingInput.style.color = '#ff4444';
@@ -578,6 +614,7 @@
             const newKey = e.key;
             updateKeybindDisplay(newKey);
             bindingInput.style.color = '#ffffff';
+
             window.removeEventListener('keydown', keyHandler);
         };
         window.addEventListener('keydown', keyHandler, { once: true });
@@ -588,13 +625,16 @@
             }
         }, 5000);
     });
-
     // Standard Modules
+    const keystrokesBtn = document.createElement('button');
+    keystrokesBtn.className = 'nova-menu-btn';
+    keystrokesBtn.textContent = 'Keystrokes';
+    menuContent.appendChild(keystrokesBtn);
+
     const fpsBtn = document.createElement('button');
     fpsBtn.className = 'nova-menu-btn';
     fpsBtn.textContent = 'FPS Counter';
     menuContent.appendChild(fpsBtn);
-
     const cpsBtn = document.createElement('button');
     cpsBtn.className = 'nova-menu-btn';
     cpsBtn.textContent = 'CPS Counter';
@@ -609,7 +649,6 @@
     fullscreenBtn.className = 'nova-menu-btn';
     fullscreenBtn.textContent = 'Auto Fullscreen';
     menuContent.appendChild(fullscreenBtn);
-
     // Color Customizer Section
     const colorCustomizerContainer = document.createElement('div');
     colorCustomizerContainer.style.padding = '10px 0';
@@ -652,7 +691,6 @@
     const notification = document.createElement('div');
     notification.id = 'nova-milestone-notification';
     document.body.appendChild(notification);
-
     // --- Playtime & Gold Reward Logic ---
     function updatePlaytimeDisplay() {
         const currentSession = Date.now() - sessionStart;
@@ -660,7 +698,6 @@
         playtimeDisplay.textContent = `⏱️ ${formatPlaytime(total)}`;
 
         const hours = total / (1000 * 60 * 60);
-
         // --- Milestone Logic ---
         if (hours >= 10) {
             menuHeader.classList.add('gold');
@@ -671,7 +708,6 @@
             bindingInput.style.borderColor = '#ffd700';
             bindingInput.style.color = '#ffd700';
             document.querySelectorAll('.nova-menu-btn:not(.static)').forEach(btn => btn.classList.add('gold'));
-
             // Notification Logic
             const goldRewardClaimed = loadData('goldRewardClaimed', false);
             if (!goldRewardClaimed) {
@@ -714,7 +750,6 @@
             });
         }
     });
-
     window.addEventListener('keydown', e => {
         if (e.key === menuKeybind) {
             e.preventDefault();
@@ -728,7 +763,6 @@
             }
         }
     });
-
     fullscreenBtn.addEventListener('click', () => {
         const elem = document.documentElement;
         if (!document.fullscreenElement) {
@@ -741,15 +775,176 @@
             fullscreenBtn.textContent = 'Auto Fullscreen';
         }
     });
+    // --- Keystrokes Logic ---
+    function createKey(text, style = {}) {
+        const key = document.createElement('div');
+        key.textContent = text;
+        key.classList.add('keystroke-key');
+        Object.assign(key.style, style);
+        return key;
+    }
 
+    function startKeystrokes() {
+        if (isKeystrokesActive) return;
+        isKeystrokesActive = true;
+
+        keystrokescontainer = document.createElement('div');
+        keystrokescontainer.id = 'keystrokes-container';
+
+        // Load or default position
+        const savedLeft = loadData('keystrokesLeft', window.innerWidth / 2);
+        const savedTop = loadData('keystrokesTop', window.innerHeight / 2);
+        keystrokescontainer.style.left = savedLeft + 'px';
+        keystrokescontainer.style.top = savedTop + 'px';
+
+        const wkey = createKey('W', { top: '0px', left: '125px' });
+        const akey = createKey('A', { top: '55px', left: '70px' });
+        const skey = createKey('S', { top: '55px', left: '125px' });
+        const dkey = createKey('D', { top: '55px', left: '180px' });
+        const lmb = createKey('LMB', { top: '110px', left: '70px', width: '79px' });
+        const rmb = createKey('RMB', { top: '110px', left: '150px', width: '79px' });
+        const space = createKey('_____', { top: '170px', left: '70px', width: '160px' });
+
+        keystrokescontainer.append(wkey, akey, skey, dkey, lmb, rmb, space);
+        document.body.appendChild(keystrokescontainer);
+
+        // --- Dragging Logic ---
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        const startDrag = (event) => {
+            isDragging = true;
+            offsetX = event.clientX - keystrokescontainer.getBoundingClientRect().left;
+            offsetY = event.clientY - keystrokescontainer.getBoundingClientRect().top;
+            keystrokescontainer.style.cursor = 'grabbing';
+        };
+
+        const onDrag = (event) => {
+            if (!isDragging) return;
+            const newLeft = event.clientX - offsetX;
+            const newTop = event.clientY - offsetY;
+            keystrokescontainer.style.left = newLeft + 'px';
+            keystrokescontainer.style.top = newTop + 'px';
+        };
+
+        const endDrag = () => {
+            if (!isDragging) return;
+            isDragging = false;
+            keystrokescontainer.style.cursor = 'grab';
+
+            // Save final position
+            saveData('keystrokesLeft', parseFloat(keystrokescontainer.style.left));
+            saveData('keystrokesTop', parseFloat(keystrokescontainer.style.top));
+        };
+
+        keystrokescontainer.addEventListener('mousedown', startDrag);
+        document.addEventListener('mousemove', onDrag);
+        document.addEventListener('mouseup', endDrag);
+
+        // Save listeners to remove them later
+        keyEventListeners.dragListeners = [
+            { target: keystrokescontainer, type: 'mousedown', listener: startDrag },
+            { target: document, type: 'mousemove', listener: onDrag },
+            { target: document, type: 'mouseup', listener: endDrag }
+        ];
+
+        // --- Key/Mouse Press Logic ---
+        const getDownColor = () => {
+             // We get the computed style from one of the key elements (wkey) to read the dynamic CSS variable
+            return window.getComputedStyle(wkey).getPropertyValue('--key-down-color');
+        };
+
+        const handleKeyDown = (event) => {
+            const downColor = getDownColor();
+            switch (event.code) {
+                case 'KeyW': wkey.style.backgroundColor = downColor; break;
+                case 'KeyS': skey.style.backgroundColor = downColor; break;
+                case 'KeyA': akey.style.backgroundColor = downColor; break;
+                case 'KeyD': dkey.style.backgroundColor = downColor; break;
+                case 'Space': space.style.backgroundColor = downColor; break;
+            }
+        };
+
+        const handleKeyUp = (event) => {
+            switch (event.code) {
+                case 'KeyW': wkey.style.backgroundColor = KEY_UP_COLOR; break;
+                case 'KeyS': skey.style.backgroundColor = KEY_UP_COLOR; break;
+                case 'KeyA': akey.style.backgroundColor = KEY_UP_COLOR; break;
+                case 'KeyD': dkey.style.backgroundColor = KEY_UP_COLOR; break;
+                case 'Space': space.style.backgroundColor = KEY_UP_COLOR; break;
+            }
+        };
+
+        const handleMouseDown = (event) => {
+            const downColor = getDownColor();
+            if (event.button === 0) { // Left Click
+                lmb.style.backgroundColor = downColor;
+            } else if (event.button === 2) { // Right Click
+                rmb.style.backgroundColor = downColor;
+            }
+        };
+
+        const handleMouseUp = (event) => {
+            if (event.button === 0) { // Left Click
+                lmb.style.backgroundColor = KEY_UP_COLOR;
+            } else if (event.button === 2) { // Right Click
+                rmb.style.backgroundColor = KEY_UP_COLOR;
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('keyup', handleKeyUp);
+        document.addEventListener('mousedown', handleMouseDown);
+        document.addEventListener('mouseup', handleMouseUp);
+
+        keyEventListeners.keyListeners = [
+            { target: document, type: 'keydown', listener: handleKeyDown },
+            { target: document, type: 'keyup', listener: handleKeyUp },
+            { target: document, type: 'mousedown', listener: handleMouseDown },
+            { target: document, type: 'mouseup', listener: handleMouseUp }
+        ];
+
+        keystrokesBtn.textContent = 'Hide Keystrokes';
+    }
+
+    function stopKeystrokes() {
+        if (!isKeystrokesActive) return;
+        isKeystrokesActive = false;
+
+        // Remove listeners
+        if (keyEventListeners.dragListeners) {
+            keyEventListeners.dragListeners.forEach(e => e.target.removeEventListener(e.type, e.listener));
+        }
+        if (keyEventListeners.keyListeners) {
+            keyEventListeners.keyListeners.forEach(e => e.target.removeEventListener(e.type, e.listener));
+        }
+
+        if (keystrokescontainer) {
+            keystrokescontainer.remove();
+            keystrokescontainer = null;
+        }
+
+        keystrokesBtn.textContent = 'Keystrokes';
+    }
+
+    // --- Add Listeners to Menu Buttons ---
+    keystrokesBtn.addEventListener('click', () => {
+        if (isKeystrokesActive) {
+            stopKeystrokes();
+        } else {
+            startKeystrokes();
+        }
+    });
+
+    // --- Time Counters (FPS, CPS, Real Time) ---
     let fpsCounter;
     let fpsInterval, lastFrameTime, frames;
     let isDraggingFPS = false, dragOffsetXFPS = 0, dragOffsetYFPS = 0;
-function createFPSCounter() {
+    function createFPSCounter() {
         fpsCounter = document.createElement('div');
         fpsCounter.id = 'fps-counter';
         fpsCounter.className = 'counter';
-fpsCounter.textContent = 'FPS: 0';
+        fpsCounter.textContent = 'FPS: 0';
         document.body.appendChild(fpsCounter);
 
         fpsCounter.addEventListener('mousedown', e => {
@@ -759,61 +954,62 @@ fpsCounter.textContent = 'FPS: 0';
             fpsCounter.classList.add('dragging');
             e.preventDefault();
         });
-window.addEventListener('mouseup', () => {
+        window.addEventListener('mouseup', () => {
             if (isDraggingFPS) {
                 isDraggingFPS = false;
                 fpsCounter.classList.remove('dragging');
             }
         });
-window.addEventListener('mousemove', e => {
+        window.addEventListener('mousemove', e => {
             if (isDraggingFPS) {
                 let newX = e.clientX - dragOffsetXFPS;
                 let newY = e.clientY - dragOffsetYFPS;
                 const padding = 10;
                 newX = Math.min(window.innerWidth - fpsCounter.offsetWidth -
-padding, Math.max(padding, newX));
+padding,
+Math.max(padding, newX));
                 newY = Math.min(window.innerHeight - fpsCounter.offsetHeight - padding, Math.max(padding, newY));
                 fpsCounter.style.left = newX + 'px';
                 fpsCounter.style.top = newY + 'px';
             }
         });
-}
+    }
 
     function startFPSCounter() {
         if (!fpsCounter) createFPSCounter();
         fpsInterval = 1000;
-lastFrameTime = performance.now();
+        lastFrameTime = performance.now();
         frames = 0;
 
         function update() {
             const now = performance.now();
-frames++;
+            frames++;
             if (now - lastFrameTime > fpsInterval) {
                 const fps = Math.round((frames * 1000) / (now - lastFrameTime));
-fpsCounter.textContent = `FPS: ${fps}`;
+                fpsCounter.textContent = `FPS: ${fps}`;
                 lastFrameTime = now;
                 frames = 0;
-}
+            }
             if (fpsCounter) requestAnimationFrame(update);
-}
+        }
         requestAnimationFrame(update);
     }
 
     function stopFPSCounter() {
         if (fpsCounter) {
             fpsCounter.remove();
-fpsCounter = null;
+            fpsCounter = null;
         }
     }
     let cpsCounter;
     let cpsClicks = [];
-let isDraggingCPS = false, dragOffsetXCPS = 0, dragOffsetYCPS = 0;
+    let isDraggingCPS = false, dragOffsetXCPS = 0, dragOffsetYCPS = 0;
     let cpsIntervalId;
-function createCPSCounter() {
+    function createCPSCounter() {
         cpsCounter = document.createElement('div');
         cpsCounter.id = 'cps-counter';
         cpsCounter.className = 'counter';
-cpsCounter.textContent = 'CPS: 0';
+        cpsCounter.textContent = 'CPS: 0';
         document.body.appendChild(cpsCounter);
 
         cpsCounter.addEventListener('mousedown', e => {
@@ -823,64 +1019,65 @@ cpsCounter.textContent = 'CPS: 0';
             cpsCounter.classList.add('dragging');
             e.preventDefault();
         });
-window.addEventListener('mouseup', () => {
+        window.addEventListener('mouseup', () => {
             if (isDraggingCPS) {
                 isDraggingCPS = false;
                 cpsCounter.classList.remove('dragging');
             }
         });
-window.addEventListener('mousemove', e => {
+        window.addEventListener('mousemove', e => {
             if (isDraggingCPS) {
                 let newX = e.clientX - dragOffsetXCPS;
                 let newY = e.clientY - dragOffsetYCPS;
                 const padding = 10;
                 newX = Math.min(window.innerWidth - cpsCounter.offsetWidth -
-padding, Math.max(padding, newX));
+padding,
+Math.max(padding, newX));
                 newY = Math.min(window.innerHeight - cpsCounter.offsetHeight - padding, Math.max(padding, newY));
                 cpsCounter.style.left = newX + 'px';
                 cpsCounter.style.top = newY + 'px';
             }
         });
-window.addEventListener('mousedown', cpsClickListener);
+        window.addEventListener('mousedown', cpsClickListener);
     }
 
     function cpsClickListener(e) {
         if (e.button === 0) {
             cpsClicks.push(performance.now());
-const cutoff = performance.now() - 1000;
+            const cutoff = performance.now() - 1000;
             cpsClicks = cpsClicks.filter(ts => ts >= cutoff);
             updateCPSCounter();
-}
+        }
     }
 
     function updateCPSCounter() {
         if (cpsCounter) {
             cpsCounter.textContent = `CPS: ${cpsClicks.length}`;
-}
+        }
     }
 
     function startCPSCounter() {
         if (!cpsCounter) createCPSCounter();
-cpsClicks = [];
+        cpsClicks = [];
         cpsIntervalId = setInterval(() => {
             const cutoff = performance.now() - 1000;
             cpsClicks = cpsClicks.filter(ts => ts >= cutoff);
             updateCPSCounter();
         }, 100);
-}
+    }
 
     function stopCPSCounter() {
         if (cpsCounter) {
             cpsCounter.remove();
-cpsCounter = null;
+            cpsCounter = null;
         }
         window.removeEventListener('mousedown', cpsClickListener);
         if (cpsIntervalId) clearInterval(cpsIntervalId);
-}
+    }
 
     let fpsShown = false;
     let cpsShown = false;
-fpsBtn.addEventListener('click', () => {
+    fpsBtn.addEventListener('click', () => {
         if (fpsShown) {
             stopFPSCounter();
             fpsBtn.textContent = 'FPS Counter';
@@ -890,9 +1087,10 @@ fpsBtn.addEventListener('click', () => {
             fpsBtn.textContent = 'Hide FPS Counter';
 
      fpsShown = true;
+
         }
     });
-cpsBtn.addEventListener('click', () => {
+    cpsBtn.addEventListener('click', () => {
         if (cpsShown) {
             stopCPSCounter();
             cpsBtn.textContent = 'CPS Counter';
@@ -902,40 +1100,41 @@ cpsBtn.addEventListener('click', () => {
             cpsBtn.textContent = 'Hide CPS Counter';
 
      cpsShown = true;
+
         }
     });
     let realTimeCounter;
     let realTimeTooltip;
     let realTimeInterval;
     let realTimeShown = false;
-function createRealTimeCounter() {
+    function createRealTimeCounter() {
         realTimeCounter = document.createElement('div');
         realTimeCounter.id = 'real-time-counter';
         realTimeCounter.style.position = 'fixed';
-realTimeCounter.style.bottom = '10px';
+        realTimeCounter.style.bottom = '10px';
         realTimeCounter.style.right = '10px';
         realTimeCounter.style.color = '#fff';
         realTimeCounter.style.fontFamily = '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
         realTimeCounter.style.fontWeight = '700';
-realTimeCounter.style.fontSize = '22px';
+        realTimeCounter.style.fontSize = '22px';
         realTimeCounter.style.userSelect = 'none';
         realTimeCounter.style.zIndex = '9999';
         realTimeCounter.style.cursor = 'default';
 
         realTimeTooltip = document.createElement('div');
-realTimeTooltip.textContent = "Shows you the time so you don't have to exit Fullscreen";
+        realTimeTooltip.textContent = "Shows you the time so you don't have to exit Fullscreen";
         realTimeTooltip.style.position = 'absolute';
-realTimeTooltip.style.bottom = 'calc(100% + 8px)';
+        realTimeTooltip.style.bottom = 'calc(100% + 8px)';
         realTimeTooltip.style.right = '0';
         realTimeTooltip.style.backgroundColor = 'black';
         realTimeTooltip.style.color = 'white';
         realTimeTooltip.style.padding = '6px 10px';
-realTimeTooltip.style.borderRadius = '6px';
+        realTimeTooltip.style.borderRadius = '6px';
         realTimeTooltip.style.fontSize = '12px';
         realTimeTooltip.style.whiteSpace = 'nowrap';
         realTimeTooltip.style.boxShadow = '0 0 6px rgba(0,0,0,0.8)';
         realTimeTooltip.style.opacity = '0';
-realTimeTooltip.style.pointerEvents = 'none';
+        realTimeTooltip.style.pointerEvents = 'none';
         realTimeTooltip.style.transition = 'opacity 0.25s ease';
         realTimeCounter.appendChild(realTimeTooltip);
 
@@ -943,40 +1142,40 @@ realTimeTooltip.style.pointerEvents = 'none';
             realTimeTooltip.style.opacity = '1';
             realTimeTooltip.style.pointerEvents = 'auto';
         });
-realTimeCounter.addEventListener('mouseleave', () => {
+        realTimeCounter.addEventListener('mouseleave', () => {
             realTimeTooltip.style.opacity = '0';
             realTimeTooltip.style.pointerEvents = 'none';
         });
-document.body.appendChild(realTimeCounter);
+        document.body.appendChild(realTimeCounter);
     }
 
     function updateRealTime() {
         const now = new Date();
-let hours = now.getHours();
+        let hours = now.getHours();
         const minutes = now.getMinutes().toString().padStart(2, '0');
         const seconds = now.getSeconds().toString().padStart(2, '0');
-const ampm = hours >= 12 ? 'PM' : 'AM';
+        const ampm = hours >= 12 ? 'PM' : 'AM';
         hours = hours % 12;
         hours = hours ?
-hours : 12;
+        hours : 12;
         realTimeCounter.textContent = `${hours}:${minutes}:${seconds} ${ampm}`;
         realTimeCounter.appendChild(realTimeTooltip);
     }
 
     function startRealTimeCounter() {
         if (!realTimeCounter) createRealTimeCounter();
-updateRealTime();
+        updateRealTime();
         realTimeInterval = setInterval(updateRealTime, 1000);
     }
 
     function stopRealTimeCounter() {
         if (realTimeCounter) {
             realTimeCounter.remove();
-realTimeCounter = null;
+            realTimeCounter = null;
         }
         if (realTimeInterval) {
             clearInterval(realTimeInterval);
-realTimeInterval = null;
+            realTimeInterval = null;
         }
     }
 
@@ -988,15 +1187,14 @@ realTimeInterval = null;
         } else {
             startRealTimeCounter();
             realTimeBtn.textContent
-= 'Hide Real Time';
+=
+'Hide Real Time';
             realTimeShown = true;
         }
     });
-
     // --- Background and Coin Logic ---
     const NEW_BACKGROUND_URL = "https://i.redd.it/i-made-some-wallpapers-using-shaders-v0-tgfd02iq0lba1.png?width=2880&format=png&auto=webp&s=b124065d9841d2ec52508000f7e896ec7d244839";
     const BACKGROUND_SELECTORS = ['img.chakra-image.css-rkihvp', 'img.chakra-image.css-mohuzh', '.css-aznra0'];
-
     function applyCustomBackground(element) {
         for (const selector of BACKGROUND_SELECTORS) {
             if (element.matches(selector)) {
@@ -1018,10 +1216,12 @@ realTimeInterval = null;
                 if (mutation.type === 'childList') {
                     mutation.addedNodes.forEach(node => {
                         if (node.nodeType === Node.ELEMENT_NODE) {
+
                             applyCustomBackground(node);
                             BACKGROUND_SELECTORS.forEach(selector => { node.querySelectorAll(selector).forEach(applyCustomBackground); });
                         }
                     });
+
                 }
             });
         });
@@ -1034,14 +1234,12 @@ realTimeInterval = null;
     setTimeout(() => {
         document.querySelectorAll(`img[src="${OLD_COIN_URL}"]`).forEach(img => { img.src = NEW_COIN_URL; });
     }, 5000);
-
     // --- FINAL SETUP ---
     window.addEventListener('beforeunload', () => {
         const currentSession = Date.now() - sessionStart;
         totalPlaytime += currentSession;
         saveData('playtime', totalPlaytime);
     });
-
     setInterval(updatePlaytimeDisplay, 1000);
 
 })();
