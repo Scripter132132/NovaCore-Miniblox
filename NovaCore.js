@@ -699,7 +699,7 @@
 
         const hours = total / (1000 * 60 * 60);
         // --- Milestone Logic ---
-        if (hours >= 10) {
+        if (hours >= 168) {
             menuHeader.classList.add('gold');
             menuContent.classList.add('gold');
             statsSection.classList.add('gold');
@@ -1254,3 +1254,4 @@ Math.max(padding, newX));
         }, 0);
     };
 })();
+
