@@ -1,0 +1,41 @@
+// ==UserScript==
+// @name         NovaCore Loader
+// @namespace    http://tampermonkey.net/
+// @version      1.4
+// @description  Load NovaCore for Miniblox without Tampermonkey cross-origin prompts
+// @match        *://miniblox.io/*
+// @run-at       document-start
+// @icon         https://raw.githubusercontent.com/Scripter132132/NovaCore-Miniblox/refs/heads/main/NovaCore-Logo.png
+// @grant        GM_xmlhttpRequest
+// @grant        unsafeWindow
+// @connect      raw.githubusercontent.com
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    const base = "https://raw.githubusercontent.com/Scripter132132/NovaCore-Miniblox/main/NovaCore.js";
+    const url = base + "?t=" + Date.now();
+
+    GM_xmlhttpRequest({
+        method: "GET",
+        url,
+        onload: function(response) {
+            if (response.status === 200) {
+                try {
+                    const script = document.createElement("script");
+                    script.textContent = response.responseText + "\n//# sourceURL=NovaCore.js";
+                    (document.head || document.documentElement).appendChild(script);
+                    console.log("[NovaCore Loader] Loaded latest NovaCore version.");
+                } catch (e) {
+                    console.error("[NovaCore Loader] Failed to inject script:", e);
+                }
+            } else {
+                console.error("[NovaCore Loader] Fetch failed:", response.status, response.statusText);
+            }
+        },
+        onerror: function(err) {
+            console.error("[NovaCore Loader] Network error:", err);
+        }
+    });
+})();
