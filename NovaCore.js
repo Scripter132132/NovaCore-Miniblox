@@ -19,8 +19,8 @@
     // --- Keystrokes State ---
     let isKeystrokesActive = false;
     let keystrokescontainer = null;
-    let keyEventListeners = {}; // Store references to listeners
-    const KEY_UP_COLOR = 'rgba(128, 128, 128, 0.7)'; // Translucent Gray for unpressed key
+    let keyEventListeners = {};
+    const KEY_UP_COLOR = 'rgba(128, 128, 128, 0.7)';
 
     // --- CSS Block ---
     const style = document.createElement('style');
@@ -447,8 +447,6 @@
 
         return `${d}d ${h}h ${m}m ${s}s`;
     }
-
-    // --- Function to update the keybind ---
     function updateKeybindDisplay(key) {
         menuKeybind = key;
         localStorage.setItem('novaMenuKey', key);
@@ -501,6 +499,280 @@
         }, 5000);
     }
 
+    // --- Crosshair Module Logic Definitions ---
+    let crosshairContainer;
+    let currentColor, currentDesign;
+    let f5PressCount, otherKeysManualHide;
+    let crosshairDesignButtons = {};
+    let sliders = [];
+
+    function makeLine(styles) {
+        const div = document.createElement('div');
+        Object.assign(div.style, {
+            position: 'absolute',
+            backgroundColor: currentColor,
+            pointerEvents: 'none'
+        }, styles);
+        return div;
+    }
+
+    const designs = {
+        "All": function() {
+            const c = document.createElement('div');
+            const circle = document.createElement('div');
+            Object.assign(circle.style, {
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                width: '18px',
+                height: '18px',
+                border: `2px solid ${currentColor}`,
+                borderRadius: '50%',
+                transform: 'translate(-50%, -50%)'
+            });
+            c.appendChild(circle);
+            const dot = document.createElement('div');
+            Object.assign(dot.style, {
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                width: '3px',
+                height: '3px',
+                backgroundColor: currentColor,
+                borderRadius: '50%',
+                transform: 'translate(-50%, -50%)'
+            });
+            c.appendChild(dot);
+            c.appendChild(makeLine({ top: '0', left: '50%', width: '1px', height: '8px', transform: 'translateX(-50%)' }));
+            c.appendChild(makeLine({ bottom: '0', left: '50%', width: '1px', height: '8px', transform: 'translateX(-50%)' }));
+            c.appendChild(makeLine({ left: '0', top: '50%', width: '8px', height: '1px', transform: 'translateY(-50%)' }));
+            c.appendChild(makeLine({ right: '0', top: '50%', width: '8px', height: '1px', transform: 'translateY(-50%)' }));
+
+            return c;
+        },
+
+        "Dot": function() {
+            const c = document.createElement('div');
+            const dot = document.createElement('div');
+            Object.assign(dot.style, {
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                width: '5px',
+                height: '5px',
+                backgroundColor: currentColor,
+                borderRadius: '50%',
+                transform: 'translate(-50%, -50%)'
+            });
+            c.appendChild(dot);
+            return c;
+        },
+
+        "Circle": function() {
+            const c = document.createElement('div');
+            const circle = document.createElement('div');
+            Object.assign(circle.style, {
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                width: '18px',
+                height: '18px',
+                border: `2px solid ${currentColor}`,
+                borderRadius: '50%',
+                transform: 'translate(-50%, -50%)'
+            });
+            c.appendChild(circle);
+            const dot = document.createElement('div');
+            Object.assign(dot.style, {
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                width: '3px',
+                height: '3px',
+                backgroundColor: currentColor,
+                borderRadius: '50%',
+                transform: 'translate(-50%, -50%)'
+            });
+            c.appendChild(dot);
+            return c;
+        },
+
+        "Target": function() {
+            const c = document.createElement('div');
+            const dot = document.createElement('div');
+            Object.assign(dot.style, {
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                width: '3px',
+                height: '3px',
+                backgroundColor: currentColor,
+                borderRadius: '50%',
+                transform: 'translate(-50%, -50%)'
+            });
+            c.appendChild(dot);
+            c.appendChild(makeLine({ top: '-10px', left: '50%', width: '1.5px', height: '6px', transform: 'translateX(-50%)' }));
+            c.appendChild(makeLine({ bottom: '-10px', left: '50%', width: '1.5px', height: '6px', transform: 'translateX(-50%)' }));
+            c.appendChild(makeLine({ left: '-10px', top: '50%', width: '6px', height: '1.5px', transform: 'translateY(-50%)' }));
+            c.appendChild(makeLine({ right: '-10px', top: '50%', width: '6px', height: '1.5px', transform: 'translateY(-50%)' }));
+            return c;
+        },
+
+        "Crosshair": function() {
+            const c = document.createElement('div');
+            c.appendChild(makeLine({ top: '0', left: '50%', width: '2px', height: '6px', transform: 'translateX(-50%)' }));
+            c.appendChild(makeLine({ bottom: '0', left: '50%', width: '2px', height: '6px', transform: 'translateX(-50%)' }));
+            c.appendChild(makeLine({ left: '0', top: '50%', width: '6px', height: '2px', transform: 'translateY(-50%)' }));
+            c.appendChild(makeLine({ right: '0', top: '50%', width: '6px', height: '2px', transform: 'translateY(-50%)' }));
+            return c;
+        }
+    };
+
+    function updateColor() {
+        const [r, g, b] = sliders.map(s => s.querySelector('input').value);
+        currentColor = `rgb(${r},${g},${b})`;
+        saveData("crosshairColor", currentColor);
+        const colorPreview = document.getElementById('crosshair-color-preview');
+        if (colorPreview) colorPreview.style.background = currentColor;
+        updateCrosshair();
+    }
+
+    function updateCrosshair() {
+        if (crosshairContainer) {
+            crosshairContainer.innerHTML = '';
+            crosshairContainer.appendChild(designs[currentDesign]());
+        }
+    }
+
+    function checkCrosshair() {
+        if (!crosshairContainer) return;
+        const defaultCrosshair = document.querySelector('.css-xhoozx');
+        const pauseMenu = document.querySelector('.chakra-modal__content-container,[role="dialog"]');
+
+        const isManuallyHidden = (f5PressCount === 1 || f5PressCount === 2) || otherKeysManualHide;
+
+        if (defaultCrosshair && !pauseMenu) {
+            if (isManuallyHidden) {
+                crosshairContainer.style.display = 'none';
+                defaultCrosshair.style.display = 'none';
+            } else {
+                defaultCrosshair.style.display = 'none';
+                crosshairContainer.style.display = 'block';
+            }
+        } else {
+            crosshairContainer.style.display = 'none';
+            f5PressCount = 0;
+            otherKeysManualHide = false;
+        }
+
+        const crosshairToggleBtn = document.getElementById('crosshair-toggle-btn');
+        if (crosshairToggleBtn) {
+            crosshairToggleBtn.textContent = isManuallyHidden ? 'Enable Crosshair' : 'Disable Crosshair (F1/F5)';
+        }
+    }
+
+    // --- Crosshair Initialization ---
+    function initializeCrosshairModule() {
+        // --- 1. State Initialization ---
+        crosshairContainer = document.createElement('div');
+        crosshairContainer.id = 'custom-crosshair-container';
+        Object.assign(crosshairContainer.style, {
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: '9999',
+            pointerEvents: 'none',
+            display: 'none'
+        });
+        document.body.appendChild(crosshairContainer);
+
+        currentColor = loadData("crosshairColor", "rgb(255,255,255)");
+        currentDesign = loadData("crosshairDesign", "Crosshair");
+        f5PressCount = 0;
+        otherKeysManualHide = false;
+        updateCrosshair();
+
+        // --- 2. Menu Element Creation ---
+        const crosshairControlsTitle = document.createElement('div');
+        crosshairControlsTitle.className = 'nova-menu-btn static';
+        crosshairControlsTitle.textContent = '🎯 Custom Crosshair';
+        crosshairControlsTitle.style.borderRadius = '10px 10px 0 0';
+        crosshairControlsTitle.style.marginBottom = '-2px';
+        crosshairControlsTitle.style.marginTop = '14px';
+        menuContent.appendChild(crosshairControlsTitle);
+
+        const crosshairSection = document.createElement('div');
+        crosshairSection.className = 'nova-section';
+
+        const designWrapper = document.createElement('div');
+        designWrapper.innerHTML = `<b>Design:</b><div style="display:flex; flex-wrap: wrap;">`;
+
+        Object.keys(designs).forEach(name => {
+            const btn = document.createElement('button');
+            btn.textContent = name;
+            btn.classList.add('nova-menu-btn');
+            btn.style.width = 'auto';
+            btn.style.flex = '1';
+            btn.style.margin = '5px';
+            btn.style.padding = '8px 4px';
+            btn.style.fontSize = '12px';
+
+            btn.onclick = () => {
+                currentDesign = name;
+                saveData("crosshairDesign", name);
+                updateCrosshair();
+            };
+            designWrapper.querySelector('div').appendChild(btn);
+            crosshairDesignButtons[name] = btn;
+        });
+
+        crosshairSection.appendChild(designWrapper);
+        const colorSection = document.createElement('div');
+        colorSection.innerHTML = `<hr style="border:1px solid #444;margin:8px 0;"><b>Color Adjust (RGB):</b><br>`;
+
+        sliders = ['R', 'G', 'B'].map((label, i) => {
+            const wrap = document.createElement('div');
+            wrap.style.display = 'flex';
+            wrap.style.alignItems = 'center';
+            wrap.style.margin = '5px 0';
+
+            const text = document.createElement('span');
+            text.textContent = `${label}: `;
+            text.style.display = 'inline-block';
+            text.style.width = '20px';
+
+            const slider = document.createElement('input');
+            slider.type = 'range';
+            slider.min = 0;
+            slider.max = 255;
+            slider.value = parseInt(currentColor.match(/\d+/g)?.[i] || 255);
+            slider.style.flex = '1';
+            slider.dataset.channel = label;
+            slider.addEventListener('input', updateColor);
+
+            wrap.appendChild(text);
+            wrap.appendChild(slider);
+            return wrap;
+        });
+
+        sliders.forEach(s => colorSection.appendChild(s));
+        const colorPreview = document.createElement('div');
+        colorPreview.id = 'crosshair-color-preview';
+        Object.assign(colorPreview.style, {
+            width: '40px',
+            height: '20px',
+            margin: '8px auto',
+            background: currentColor,
+            borderRadius: '4px',
+            border: '1px solid #555'
+        });
+        colorSection.appendChild(colorPreview);
+        crosshairSection.appendChild(colorSection);
+        menuContent.appendChild(crosshairSection);
+        new MutationObserver(() => { requestAnimationFrame(checkCrosshair); }).observe(document.body, { childList: true, subtree: true });
+    }
+
     // --- UI Elements (Intro) ---
     const overlay = document.createElement('div');
     overlay.id = 'nova-intro';
@@ -521,8 +793,6 @@
 
     overlay.appendChild(clientNameContainer);
     document.body.appendChild(overlay);
-
-    // Placeholder for checkBtn since it was removed from HTML:
     const checkBtn = document.createElement('span');
 
     setTimeout(() => { checkBtn.style.animation = 'checkPopIn 0.6s forwards ease'; }, 900);
@@ -551,6 +821,7 @@
 = '0';
             }, 4000);
         }, 1000);
+
     }, 7000);
     // --- UI Elements (Menu) ---
     const menuOverlay = document.createElement('div');
@@ -687,6 +958,15 @@
 
     menuOverlay.appendChild(menuContent);
     document.body.appendChild(menuOverlay);
+window.addEventListener("load", () => {
+    const waitForMenu = setInterval(() => {
+        if (document.getElementById("nova-menu-content")) {
+            clearInterval(waitForMenu);
+            initializeCrosshairModule();
+        }
+    }, 500);
+});
+
 
     const notification = document.createElement('div');
     notification.id = 'nova-milestone-notification';
@@ -762,6 +1042,19 @@
                 updatePlaytimeDisplay();
             }
         }
+        if (e.key === 'F5') {
+            e.preventDefault();
+            f5PressCount = (f5PressCount + 1) % 3;
+            otherKeysManualHide = false;
+            checkCrosshair();
+        }
+
+        if (e.key === 'F1') {
+            e.preventDefault();
+            otherKeysManualHide = !otherKeysManualHide;
+            f5PressCount = 0;
+            checkCrosshair();
+        }
     });
     fullscreenBtn.addEventListener('click', () => {
         const elem = document.documentElement;
@@ -831,8 +1124,6 @@
             if (!isDragging) return;
             isDragging = false;
             keystrokescontainer.style.cursor = 'grab';
-
-            // Save final position
             saveData('keystrokesLeft', parseFloat(keystrokescontainer.style.left));
             saveData('keystrokesTop', parseFloat(keystrokescontainer.style.top));
         };
@@ -850,7 +1141,6 @@
 
         // --- Key/Mouse Press Logic ---
         const getDownColor = () => {
-             // We get the computed style from one of the key elements (wkey) to read the dynamic CSS variable
             return window.getComputedStyle(wkey).getPropertyValue('--key-down-color');
         };
 
@@ -911,7 +1201,6 @@
         if (!isKeystrokesActive) return;
         isKeystrokesActive = false;
 
-        // Remove listeners
         if (keyEventListeners.dragListeners) {
             keyEventListeners.dragListeners.forEach(e => e.target.removeEventListener(e.type, e.listener));
         }
@@ -1192,7 +1481,6 @@ Math.max(padding, newX));
             realTimeShown = true;
         }
     });
-    // --- Background and Coin Logic ---
     const NEW_BACKGROUND_URL = "https://i.redd.it/i-made-some-wallpapers-using-shaders-v0-tgfd02iq0lba1.png?width=2880&format=png&auto=webp&s=b124065d9841d2ec52508000f7e896ec7d244839";
     const BACKGROUND_SELECTORS = ['img.chakra-image.css-rkihvp', 'img.chakra-image.css-mohuzh', '.css-aznra0'];
     function applyCustomBackground(element) {
@@ -1255,3 +1543,14 @@ Math.max(padding, newX));
     };
 })();
 
+
+setTimeout(() => {
+  const header = document.getElementById("nova-persistent-header");
+  if (header) {
+      const observer = new MutationObserver(() => {
+          const inGame = !document.querySelector('.chakra-button.css-cuh8pi');
+          if (inGame && document.body.contains(header)) header.remove();
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+  }
+}, 3000);
