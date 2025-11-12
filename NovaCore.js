@@ -882,7 +882,7 @@
 
     const menuCredits = document.createElement('div');
     menuCredits.id = 'nova-menu-credits';
-    menuCredits.textContent = 'By JoudaAlt & ';
+    menuCredits.textContent = 'By JoudaAlt & Botless';
     menuOverlay.appendChild(menuCredits);
     verifyCreators();
 
@@ -1608,6 +1608,7 @@ setTimeout(() => {
       observer.observe(document.body, { childList: true, subtree: true });
   }
 }, 3000);
+
 
 
 
