@@ -116,6 +116,18 @@
     }
     /* --- END Milestone Notification Style --- */
 
+    /* --- START: Menu Credits Style --- */
+    #nova-menu-credits {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        margin-top: -10px;
+        margin-bottom: 20px;
+        color: hsl(var(--nova-hue), var(--nova-saturation), 70%); 
+        text-shadow: 0 0 5px hsla(var(--nova-hue), var(--nova-saturation), 50%, 0.5);
+    }
+    /* --- END Menu Credits Style --- */
+
     /* --- START: CSS Variables for Color Customization --- */
     :root {
         /* Default color for buttons (Cyan/Aqua Blue) */
@@ -831,6 +843,11 @@
     menuHeader.id = 'nova-menu-header';
     menuHeader.textContent = 'Novacore';
     menuOverlay.appendChild(menuHeader);
+
+    const menuCredits = document.createElement('div');
+    menuCredits.id = 'nova-menu-credits';
+    menuCredits.textContent = 'By JoudaAlt & Botless';
+    menuOverlay.appendChild(menuCredits);
 
     const menuContent = document.createElement('div');
     menuContent.id = 'nova-menu-content';
@@ -1554,3 +1571,4 @@ setTimeout(() => {
       observer.observe(document.body, { childList: true, subtree: true });
   }
 }, 3000);
+
