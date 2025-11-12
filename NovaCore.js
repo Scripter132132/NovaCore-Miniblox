@@ -11,18 +11,33 @@
         localStorage.setItem(`novacore_${key}`, JSON.stringify(value));
     }
     function verifyCreators() {
+    const check = () => {
         const creditsElement = document.getElementById('nova-menu-credits');
-        
-        if (!creditsElement || 
-            !creditsElement.textContent.includes("JoudaAlt") || 
-            !creditsElement.textContent.includes("Botless")) {
-            
+        if (!creditsElement) return false;
+
+        const text = creditsElement.textContent.trim();
+        if (!text.includes("JoudaAlt") || !text.includes("Botless")) {
             console.error("NovaCore FATAL ERROR: Creator attribution missing from Menu Credits. Halting core features.");
             alert("NovaCore FATAL ERROR: Creator attribution removed. Please restore 'JoudaAlt' and 'Botless' to the Menu Credits.");
             return false;
         }
+
+        console.log("✅ Creator verification passed");
         return true;
-    }
+    };
+    let tries = 0;
+    const interval = setInterval(() => {
+        tries++;
+        if (check()) {
+            clearInterval(interval);
+        } else if (tries > 10) {
+            clearInterval(interval);
+            console.error("NovaCore FATAL ERROR: Credits element missing after repeated checks.");
+            alert("NovaCore FATAL ERROR: Menu Credits not found. Halting NovaCore features.");
+        }
+    }, 1000);
+}
+
     // --- Client State ---
     let totalPlaytime = loadData('playtime', 0);
     let sessionStart = Date.now();
@@ -869,7 +884,7 @@
     menuCredits.id = 'nova-menu-credits';
     menuCredits.textContent = 'By JoudaAlt & Botless';
     menuOverlay.appendChild(menuCredits);
-    if (!verifyCreators()) return;
+    verifyCreators();
 
     const menuContent = document.createElement('div');
     menuContent.id = 'nova-menu-content';
@@ -1593,6 +1608,7 @@ setTimeout(() => {
       observer.observe(document.body, { childList: true, subtree: true });
   }
 }, 3000);
+
 
 
 
