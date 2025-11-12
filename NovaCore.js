@@ -12,7 +12,7 @@
     }
     function verifyCreators() {
         const sourceCode = document.documentElement.outerHTML; 
-        if (!sourceCode.includes("JoudaAlt") || !sourceCode.includes("Botless")) {
+        if (!sourceCode.includes("JoudaAlt") && !sourceCode.includes("Botless")) {
             console.error("NovaCore FATAL ERROR: Creator attribution removed. Halting execution.");
             alert("NovaCore FATAL ERROR: Creator attribution removed. Please restore 'JoudaAlt' and 'Botless' to the script.");
             return false;
@@ -1591,6 +1591,7 @@ setTimeout(() => {
       observer.observe(document.body, { childList: true, subtree: true });
   }
 }, 3000);
+
 
 
 
