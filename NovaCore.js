@@ -11,7 +11,6 @@
         localStorage.setItem(`novacore_${key}`, JSON.stringify(value));
     }
     function verifyCreators() {
-        // --- RELIABLE DOM CHECK ---
         const creditsElement = document.getElementById('nova-menu-credits');
         
         if (!creditsElement || 
@@ -868,8 +867,9 @@
 
     const menuCredits = document.createElement('div');
     menuCredits.id = 'nova-menu-credits';
-    menuCredits.textContent = 'By JoudaAlt & ';
+    menuCredits.textContent = 'By JoudaAlt & Botless';
     menuOverlay.appendChild(menuCredits);
+    if (!verifyCreators()) return;
 
     const menuContent = document.createElement('div');
     menuContent.id = 'nova-menu-content';
@@ -1593,6 +1593,7 @@ setTimeout(() => {
       observer.observe(document.body, { childList: true, subtree: true });
   }
 }, 3000);
+
 
 
 
