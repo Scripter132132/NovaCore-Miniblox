@@ -11,16 +11,18 @@
         localStorage.setItem(`novacore_${key}`, JSON.stringify(value));
     }
     function verifyCreators() {
-        const sourceCode = document.documentElement.outerHTML; 
-        if (!sourceCode.includes("JoudaAlt") && !sourceCode.includes("Botless")) {
-            console.error("NovaCore FATAL ERROR: Creator attribution removed. Halting execution.");
-            alert("NovaCore FATAL ERROR: Creator attribution removed. Please restore 'JoudaAlt' and 'Botless' to the script.");
+        // --- RELIABLE DOM CHECK ---
+        const creditsElement = document.getElementById('nova-menu-credits');
+        
+        if (!creditsElement || 
+            !creditsElement.textContent.includes("JoudaAlt") || 
+            !creditsElement.textContent.includes("Botless")) {
+            
+            console.error("NovaCore FATAL ERROR: Creator attribution missing from Menu Credits. Halting core features.");
+            alert("NovaCore FATAL ERROR: Creator attribution removed. Please restore 'JoudaAlt' and 'Botless' to the Menu Credits.");
             return false;
         }
         return true;
-    }
-    if (!verifyCreators()) {
-        return; 
     }
     // --- Client State ---
     let totalPlaytime = loadData('playtime', 0);
@@ -1591,6 +1593,7 @@ setTimeout(() => {
       observer.observe(document.body, { childList: true, subtree: true });
   }
 }, 3000);
+
 
 
 
