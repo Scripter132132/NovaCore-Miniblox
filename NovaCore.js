@@ -1,5 +1,6 @@
 (function() {
     'use strict';
+    document.title = '𝕸𝖎𝖓𝖎𝖇𝖑𝖔𝖝';
 
     // --- Data Storage Helpers ---
     function loadData(key, defaultValue) {
@@ -1608,6 +1609,7 @@ setTimeout(() => {
       observer.observe(document.body, { childList: true, subtree: true });
   }
 }, 3000);
+
 
 
 
