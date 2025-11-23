@@ -1055,30 +1055,31 @@
     menuContent.appendChild(bgContainer);
 
     bgApply.addEventListener('click', () => {
-    const url = bgInput.value.trim();
-    if (url.length > 5) {
-        saveData("nova_background", url);
-        alert("✔ Background saved!\nReload page to apply.");
-    }
+        const url = bgInput.value.trim();
+        if (url.length > 5) {
+            saveData("nova_background", url);
+            alert("✔ Background saved!\nReload page to apply.");
+        }
     });
     
     bgReset.addEventListener('click', () => {
-        saveData("nova_background", "");
-        bgInput.value = "";
-        alert("✔ Background reset!\nReload to restore default.");
+        saveData("nova_background", NEW_BACKGROUND_URL);
+        bgInput.value = NEW_BACKGROUND_URL;
+        alert("✔ Background reset!\nReload to apply.");
     });
+
     
     
         menuOverlay.appendChild(menuContent);
         document.body.appendChild(menuOverlay);
         window.addEventListener("load", () => {
-        const waitForMenu = setInterval(() => {
-            if (document.getElementById("nova-menu-content")) {
-                clearInterval(waitForMenu);
-                initializeCrosshairModule();
-            }
-        }, 500);
-    });
+            const waitForMenu = setInterval(() => {
+                if (document.getElementById("nova-menu-content")) {
+                    clearInterval(waitForMenu);
+                    initializeCrosshairModule();
+                }
+            }, 500);
+        });
 
 
     const notification = document.createElement('div');
@@ -1432,9 +1433,7 @@ Math.max(padding, newX));
                 let newX = e.clientX - dragOffsetXCPS;
                 let newY = e.clientY - dragOffsetYCPS;
                 const padding = 10;
-                newX = Math.min(window.innerWidth - cpsCounter.offsetWidth -
-padding,
-Math.max(padding, newX));
+                newX = Math.min(window.innerWidth - cpsCounter.offsetWidth - padding, Math.max(padding, newX));
                 newY = Math.min(window.innerHeight - cpsCounter.offsetHeight - padding, Math.max(padding, newY));
                 cpsCounter.style.left = newX + 'px';
                 cpsCounter.style.top = newY + 'px';
@@ -1597,7 +1596,7 @@ Math.max(padding, newX));
     const NEW_BACKGROUND_URL = "https://i.redd.it/i-made-some-wallpapers-using-shaders-v0-tgfd02iq0lba1.png?width=2880&format=png&auto=webp&s=b124065d9841d2ec52508000f7e896ec7d244839";
     const BACKGROUND_SELECTORS = ['img.chakra-image.css-rkihvp', 'img.chakra-image.css-mohuzh', '.css-aznra0'];
     
-// ======= CUSTOM BACKGROUND OBSERVER (patched) =======
+// ======= CUSTOM BACKGROUND OBSERVER =======
 (function startBackgroundObserverPatched() {
     const selectors = [
         'img.chakra-image.css-rkihvp',
@@ -1626,13 +1625,12 @@ Math.max(padding, newX));
     const saved = loadData("nova_background", "");
 
     if (saved && saved.length > 5) {
-        // apply immediately to existing elements
         try { applyToAll(saved); } catch(e){}
     }
 
     const observer = new MutationObserver(mutations => {
         const url = loadData("nova_background", "");
-        if (!url || url.length <= 5) return; // nothing to do when no custom URL set
+        if (!url || url.length <= 5) return;
         mutations.forEach(mutation => {
             mutation.addedNodes.forEach(node => {
                 if (node.nodeType !== Node.ELEMENT_NODE) return;
@@ -1648,8 +1646,6 @@ Math.max(padding, newX));
 
     observer.observe(document.body, { childList: true, subtree: true });
 })();
-
-// ======= END CUSTOM BACKGROUND OBSERVER =======
 
 const OLD_COIN_URL = "https://miniblox.io/assets/coin-D__IidTw.png";
     const NEW_COIN_URL = "https://raw.githubusercontent.com/botleast/Textures/refs/heads/main/spinning_coin_vertical.gif";
