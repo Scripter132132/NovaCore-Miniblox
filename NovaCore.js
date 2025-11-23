@@ -1010,6 +1010,99 @@
     colorSlider.style.cursor = 'pointer';
     colorCustomizerContainer.appendChild(colorSlider);
     menuContent.appendChild(colorCustomizerContainer);
+// ================================
+//  BACKGROUND IMAGE CHANGER MODULE
+// ================================
+
+let customBG = loadData("nova_background", "");
+
+const bgContainer = document.createElement("div");
+bgContainer.style.padding = "10px 0";
+bgContainer.style.display = "flex";
+bgContainer.style.flexDirection = "column";
+bgContainer.style.gap = "8px";
+
+const bgTitle = document.createElement("div");
+bgTitle.textContent = "Background Image URL:";
+bgTitle.style.color = "#00ffff";
+bgTitle.style.fontSize = "1rem";
+bgTitle.style.fontWeight = "700";
+bgContainer.appendChild(bgTitle);
+
+const bgInput = document.createElement("input");
+bgInput.type = "text";
+bgInput.placeholder = "Paste image URL here...";
+bgInput.value = customBG;
+bgInput.style.width = "100%";
+bgInput.style.padding = "10px";
+bgInput.style.background = "#222";
+bgInput.style.border = "1px solid #444";
+bgInput.style.borderRadius = "6px";
+bgInput.style.color = "#fff";
+bgInput.style.outline = "none";
+bgInput.style.fontWeight = "600";
+bgContainer.appendChild(bgInput);
+
+const bgButtons = document.createElement("div");
+bgButtons.style.display = "flex";
+bgButtons.style.justifyContent = "space-between";
+bgButtons.style.gap = "8px";
+
+const bgApply = document.createElement("button");
+bgApply.textContent = "Apply";
+bgApply.className = "nova-menu-btn";
+bgApply.style.flex = "1";
+bgButtons.appendChild(bgApply);
+
+const bgReset = document.createElement("button");
+bgReset.textContent = "Reset";
+bgReset.className = "nova-menu-btn";
+bgReset.style.flex = "1";
+bgButtons.appendChild(bgReset);
+
+bgContainer.appendChild(bgButtons);
+menuContent.appendChild(bgContainer);
+
+function applyCustomBackgroundURL(url) {
+    if (!url) return;
+    const selectors = [
+        'img.chakra-image.css-rkihvp',
+        'img.chakra-image.css-mohuzh',
+        '.css-aznra0'
+    ];
+    const applyBG = (el) => {
+        el.src = url;
+        el.style.objectFit = "cover";
+        el.style.width = "100vw";
+        el.style.height = "100vh";
+        el.style.position = "fixed";
+        el.style.zIndex = "-1";
+    };
+    selectors.forEach(selector => {
+        document.querySelectorAll(selector).forEach(applyBG);
+    });
+}
+
+bgApply.onclick = () => {
+    const url = bgInput.value.trim();
+    if (!url) return;
+    saveData("nova_background", url);
+    customBG = url;
+    applyCustomBackgroundURL(url);
+    alert("✔ Background Updated! Reload the page to see full effect.");
+};
+
+bgReset.onclick = () => {
+    saveData("nova_background", "");
+    customBG = "";
+    bgInput.value = "";
+    alert("✔ Background Reset! Reload to restore the default background.");
+};
+
+if (customBG && customBG.length > 5) {
+    setTimeout(() => applyCustomBackgroundURL(customBG), 1500);
+}
+
 
     menuOverlay.appendChild(menuContent);
     document.body.appendChild(menuOverlay);
@@ -1609,13 +1702,3 @@ setTimeout(() => {
       observer.observe(document.body, { childList: true, subtree: true });
   }
 }, 3000);
-
-
-
-
-
-
-
-
-
-
