@@ -1011,16 +1011,74 @@
     colorCustomizerContainer.appendChild(colorSlider);
     menuContent.appendChild(colorCustomizerContainer);
 
-    menuOverlay.appendChild(menuContent);
-    document.body.appendChild(menuOverlay);
-window.addEventListener("load", () => {
-    const waitForMenu = setInterval(() => {
-        if (document.getElementById("nova-menu-content")) {
-            clearInterval(waitForMenu);
-            initializeCrosshairModule();
-        }
-    }, 500);
-});
+    const bgContainer = document.createElement('div');
+    bgContainer.style.padding = '10px 0';
+    bgContainer.style.display = 'flex';
+    bgContainer.style.flexDirection = 'column';
+    bgContainer.style.gap = '8px';
+    const bgTitle = document.createElement('div');
+    bgTitle.textContent = 'Background Image URL:';
+    bgTitle.style.color = '#00ffff';
+    bgTitle.style.fontSize = '1rem';
+    bgTitle.style.fontWeight = '700';
+    bgContainer.appendChild(bgTitle);
+
+    const bgInput = document.createElement('input');
+    bgInput.type = 'text';
+    bgInput.placeholder = 'Paste image URL here...';
+    bgInput.value = loadData("nova_background", "");
+    bgInput.style.width = '100%';
+    bgInput.style.padding = '10px';
+    bgInput.style.background = '#222';
+    bgInput.style.border = '1px solid #444';
+    bgInput.style.borderRadius = '6px';
+    bgInput.style.color = '#fff';
+    bgInput.style.outline = 'none';
+    bgInput.style.fontWeight = '700';
+    bgContainer.appendChild(bgInput);
+
+    const bgButtons = document.createElement('div');
+    bgButtons.style.display = 'flex';
+    bgButtons.style.gap = '8px';
+
+    const bgApply = document.createElement('button');
+    bgApply.className = 'nova-menu-btn';
+    bgApply.textContent = 'Apply';
+    bgButtons.appendChild(bgApply);
+
+    const bgReset = document.createElement('button');
+    bgReset.className = 'nova-menu-btn';
+    bgReset.textContent = 'Reset';
+    bgButtons.appendChild(bgReset);
+
+    bgContainer.appendChild(bgButtons);
+    menuContent.appendChild(bgContainer);
+
+    bgApply.addEventListener('click', () => {
+    const url = bgInput.value.trim();
+    if (url.length > 5) {
+        saveData("nova_background", url);
+        alert("✔ Background saved!\nReload page to apply.");
+    }
+    });
+    
+    bgReset.addEventListener('click', () => {
+        saveData("nova_background", "");
+        bgInput.value = "";
+        alert("✔ Background reset!\nReload to restore default.");
+    });
+    
+    
+        menuOverlay.appendChild(menuContent);
+        document.body.appendChild(menuOverlay);
+        window.addEventListener("load", () => {
+        const waitForMenu = setInterval(() => {
+            if (document.getElementById("nova-menu-content")) {
+                clearInterval(waitForMenu);
+                initializeCrosshairModule();
+            }
+        }, 500);
+    });
 
 
     const notification = document.createElement('div');
