@@ -1,6 +1,7 @@
 🌌 NovaCore
 
 Version: 1.6
+
 Platform: Tampermonkey
 
 Game Compatibility: miniblox.io
