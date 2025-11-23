@@ -722,6 +722,7 @@
 
     // --- Crosshair Initialization ---
     function initializeCrosshairModule() {
+        // --- 1. State Initialization ---
         crosshairContainer = document.createElement('div');
         crosshairContainer.id = 'custom-crosshair-container';
         Object.assign(crosshairContainer.style, {
@@ -740,7 +741,8 @@
         f5PressCount = 0;
         otherKeysManualHide = false;
         updateCrosshair();
-        
+
+        // --- 2. Menu Element Creation ---
         const crosshairControlsTitle = document.createElement('div');
         crosshairControlsTitle.className = 'nova-menu-btn static';
         crosshairControlsTitle.textContent = '🎯 Custom Crosshair';
@@ -820,7 +822,7 @@
         new MutationObserver(() => { requestAnimationFrame(checkCrosshair); }).observe(document.body, { childList: true, subtree: true });
     }
 
-    // --- Intro ---
+    // --- UI Elements (Intro) ---
     const overlay = document.createElement('div');
     overlay.id = 'nova-intro';
     const button = document.createElement('div');
@@ -1031,6 +1033,7 @@ window.addEventListener("load", () => {
         playtimeDisplay.textContent = `⏱️ ${formatPlaytime(total)}`;
 
         const hours = total / (1000 * 60 * 60);
+        // --- Milestone Logic ---
         if (hours >= 168) {
             menuHeader.classList.add('gold');
             menuContent.classList.add('gold');
@@ -1040,6 +1043,7 @@ window.addEventListener("load", () => {
             bindingInput.style.borderColor = '#ffd700';
             bindingInput.style.color = '#ffd700';
             document.querySelectorAll('.nova-menu-btn:not(.static)').forEach(btn => btn.classList.add('gold'));
+            // Notification Logic
             const goldRewardClaimed = loadData('goldRewardClaimed', false);
             if (!goldRewardClaimed) {
                 const notification = document.getElementById('nova-milestone-notification');
@@ -1183,12 +1187,14 @@ window.addEventListener("load", () => {
         document.addEventListener('mousemove', onDrag);
         document.addEventListener('mouseup', endDrag);
 
+        // Save listeners to remove them later
         keyEventListeners.dragListeners = [
             { target: keystrokescontainer, type: 'mousedown', listener: startDrag },
             { target: document, type: 'mousemove', listener: onDrag },
             { target: document, type: 'mouseup', listener: endDrag }
         ];
 
+        // --- Key/Mouse Press Logic ---
         const getDownColor = () => {
             return window.getComputedStyle(wkey).getPropertyValue('--key-down-color');
         };
@@ -1532,22 +1538,9 @@ Math.max(padding, newX));
     });
     const NEW_BACKGROUND_URL = "https://i.redd.it/i-made-some-wallpapers-using-shaders-v0-tgfd02iq0lba1.png?width=2880&format=png&auto=webp&s=b124065d9841d2ec52508000f7e896ec7d244839";
     const BACKGROUND_SELECTORS = ['img.chakra-image.css-rkihvp', 'img.chakra-image.css-mohuzh', '.css-aznra0'];
-    function applyCustomBackground(element) {
-        for (const selector of BACKGROUND_SELECTORS) {
-            if (element.matches(selector)) {
-                element.src = NEW_BACKGROUND_URL;
-                element.style.objectFit = 'cover';
-                element.style.width = '100vw';
-                element.style.height = '100vh';
-                element.style.position = 'fixed';
-                element.style.zIndex = '-1';
-                return;
-            }
-        }
-    }
-
     
-function startBackgroundObserver() {
+// ======= CUSTOM BACKGROUND OBSERVER (patched) =======
+(function startBackgroundObserverPatched() {
     const selectors = [
         'img.chakra-image.css-rkihvp',
         'img.chakra-image.css-mohuzh',
@@ -1555,13 +1548,15 @@ function startBackgroundObserver() {
     ];
 
     function applyBG(el, url) {
-        if (!el) return;
-        el.src = url;
-        el.style.objectFit = "cover";
-        el.style.width = "100vw";
-        el.style.height = "100vh";
-        el.style.position = "fixed";
-        el.style.zIndex = "-1";
+        if (!el || !url) return;
+        try {
+            el.src = url;
+            el.style.objectFit = "cover";
+            el.style.width = "100vw";
+            el.style.height = "100vh";
+            el.style.position = "fixed";
+            el.style.zIndex = "-1";
+        } catch (e) { /* ignore */ }
     }
 
     function applyToAll(url) {
@@ -1573,22 +1568,19 @@ function startBackgroundObserver() {
     const saved = loadData("nova_background", "");
 
     if (saved && saved.length > 5) {
-        applyToAll(saved);
-    } else {
-        applyToAll(NEW_BACKGROUND_URL);
+        // apply immediately to existing elements
+        try { applyToAll(saved); } catch(e){}
     }
 
     const observer = new MutationObserver(mutations => {
-        const url = loadData("nova_background", "") || NEW_BACKGROUND_URL;
-
+        const url = loadData("nova_background", "");
+        if (!url || url.length <= 5) return; // nothing to do when no custom URL set
         mutations.forEach(mutation => {
             mutation.addedNodes.forEach(node => {
                 if (node.nodeType !== Node.ELEMENT_NODE) return;
-
                 if (node.matches && selectors.some(sel => node.matches(sel))) {
                     applyBG(node, url);
                 }
-
                 selectors.forEach(sel => {
                     node.querySelectorAll?.(sel).forEach(el => applyBG(el, url));
                 });
@@ -1597,27 +1589,11 @@ function startBackgroundObserver() {
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
-}
-);
-        const observer = new MutationObserver(mutations => {
-            mutations.forEach(mutation => {
-                if (mutation.type === 'childList') {
-                    mutation.addedNodes.forEach(node => {
-                        if (node.nodeType === Node.ELEMENT_NODE) {
+})();
 
-                            applyCustomBackground(node);
-                            BACKGROUND_SELECTORS.forEach(selector => { node.querySelectorAll(selector).forEach(applyCustomBackground); });
-                        }
-                    });
+// ======= END CUSTOM BACKGROUND OBSERVER =======
 
-                }
-            });
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
-    }
-    startBackgroundObserver();
-
-    const OLD_COIN_URL = "https://miniblox.io/assets/coin-D__IidTw.png";
+const OLD_COIN_URL = "https://miniblox.io/assets/coin-D__IidTw.png";
     const NEW_COIN_URL = "https://raw.githubusercontent.com/botleast/Textures/refs/heads/main/spinning_coin_vertical.gif";
     setTimeout(() => {
         document.querySelectorAll(`img[src="${OLD_COIN_URL}"]`).forEach(img => { img.src = NEW_COIN_URL; });
