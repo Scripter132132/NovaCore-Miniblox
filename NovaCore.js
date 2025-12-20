@@ -1661,26 +1661,3 @@ const OLD_COIN_URL = "https://miniblox.io/assets/coin-D__IidTw.png";
     setInterval(updatePlaytimeDisplay, 1000);
 
 })();
-
-// ===== FPS Bypass/Booster=====
-(function() {
-    'use strict';
-    const originalRAF = window.requestAnimationFrame;
-    window.requestAnimationFrame = function(callback) {
-        return setTimeout(function() {
-            callback(performance.now());
-        }, 0);
-    };
-})();
-
-
-setTimeout(() => {
-  const header = document.getElementById("nova-persistent-header");
-  if (header) {
-      const observer = new MutationObserver(() => {
-          const inGame = !document.querySelector('.chakra-button.css-cuh8pi');
-          if (inGame && document.body.contains(header)) header.remove();
-      });
-      observer.observe(document.body, { childList: true, subtree: true });
-  }
-}, 3000);
