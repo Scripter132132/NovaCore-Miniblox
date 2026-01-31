@@ -69,7 +69,7 @@
             clearInterval(waitForGame);
 
             game.chat.addChat({
-                text: "\\#00FFFF\\[Novacore Client]\\reset\\ Hello Thank You For Using The Waddle Client."
+                text: "\\#00FFFF\\[Novacore Client]\\reset\\ Hello Thank You For Using The NovaCore Client."
             });
 
             console.log("[NovaCore] Sent Welcome Message");
@@ -1700,4 +1700,5 @@ const OLD_COIN_URL = "https://miniblox.io/assets/coin-D__IidTw.png";
     setInterval(updatePlaytimeDisplay, 1000);
 
 })();
+
 
