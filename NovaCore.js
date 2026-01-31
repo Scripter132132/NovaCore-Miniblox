@@ -39,6 +39,45 @@
     }, 1000);
 }
 
+        // welcome message for the user who uses novacore lol -jouda
+      (function() {
+    'use strict';
+
+    const gameRef = {
+        _game: null,
+        get game() {
+            if (this._game) return this._game;
+
+            const reactRoot = document.querySelector("#react");
+            if (!reactRoot) return null;
+
+            try {
+                const fiber = Object.values(reactRoot)[0];
+                const game = fiber?.updateQueue?.baseState?.element?.props?.game;
+                if (game) this._game = game;
+                return game;
+            } catch (e) {
+                console.warn("[Novacore] Not In A Game Yet:", e);
+                return null;
+            }
+        }
+    };
+
+    const waitForGame = setInterval(() => {
+        const game = gameRef.game;
+        if (game && game.chat && typeof game.chat.addChat === "function") {
+            clearInterval(waitForGame);
+
+            game.chat.addChat({
+                text: "\\#00FFFF\\[Novacore Client]\\reset\\ Hello Thank You For Using The Waddle Client."
+            });
+
+            console.log("[NovaCore] Sent Welcome Message");
+        }
+    }, 500);
+
+})();
+
     // --- Client State ---
     let totalPlaytime = loadData('playtime', 0);
     let sessionStart = Date.now();
@@ -1661,3 +1700,4 @@ const OLD_COIN_URL = "https://miniblox.io/assets/coin-D__IidTw.png";
     setInterval(updatePlaytimeDisplay, 1000);
 
 })();
+
