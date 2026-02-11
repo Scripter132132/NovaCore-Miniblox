@@ -560,6 +560,7 @@
     .nova-menu-btn.gold:hover { background: #ffd700; color: #000; }
 
     .nova-menu-btn.static { background: #000; border: 2px solid #444; color: #888; cursor: default; pointer-events: none; border-radius: 10px 10px 0 0; margin-bottom: -2px; }
+    .nova-menu-btn.static:hover { background: #000; color: #888; }
     .nova-section { background: #000000aa; border: 2px solid #444; border-radius: 0 0 10px 10px; padding: 15px; margin-bottom: 10px; margin-top: 0; }
     .nova-section.gold { border-color: #ffd700; }
     .nova-info-display { background: #000; border: 2px solid #444; color: #888; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 700; font-size: 1rem; padding: 12px 20px; border-radius: 10px; user-select: none; text-align: center; cursor: default; }
@@ -971,7 +972,8 @@
             persistentHeader.classList.add('visible');
             hintText.style.opacity = '1';
             setTimeout(() => {
-                hintText.style.opacity = '0';
+                hintText.style.opacity
+= '0';
             }, 4000);
         }, 1000);
 
@@ -1385,17 +1387,17 @@
 
         const handleMouseDown = (event) => {
             const downColor = getDownColor();
-            if (event.button === 0) {
+            if (event.button === 0) { // Left Click
                 lmb.style.backgroundColor = downColor;
-            } else if (event.button === 2) {
+            } else if (event.button === 2) { // Right Click
                 rmb.style.backgroundColor = downColor;
             }
         };
 
         const handleMouseUp = (event) => {
-            if (event.button === 0) {
+            if (event.button === 0) { // Left Click
                 lmb.style.backgroundColor = KEY_UP_COLOR;
-            } else if (event.button === 2) {
+            } else if (event.button === 2) { // Right Click
                 rmb.style.backgroundColor = KEY_UP_COLOR;
             }
         };
@@ -1434,6 +1436,7 @@
         keystrokesBtn.textContent = 'Keystrokes';
     }
 
+    // --- Add Listeners to Menu Buttons ---
     keystrokesBtn.addEventListener('click', () => {
         if (isKeystrokesActive) {
             stopKeystrokes();
@@ -1443,65 +1446,46 @@
     });
 
     // --- Time Counters (FPS, CPS, Real Time) ---
-
-    function makeDraggable(element) {
-        let isDragging = false;
-        let dragOffsetX = 0;
-        let dragOffsetY = 0;
-
-        element.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            dragOffsetX = e.clientX - element.getBoundingClientRect().left;
-            dragOffsetY = e.clientY - element.getBoundingClientRect().top;
-            element.classList.add('dragging');
-            e.preventDefault();
-        });
-
-        window.addEventListener('mouseup', () => {
-            if (isDragging) {
-                isDragging = false;
-                element.classList.remove('dragging');
-            }
-        });
-
-        window.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                const padding = 10;
-                let newX = e.clientX - dragOffsetX;
-                let newY = e.clientY - dragOffsetY;
-
-                newX = Math.min(
-                    window.innerWidth - element.offsetWidth - padding,
-                    Math.max(padding, newX)
-                );
-                newY = Math.min(
-                    window.innerHeight - element.offsetHeight - padding,
-                    Math.max(padding, newY)
-                );
-
-                element.style.left = `${newX}px`;
-                element.style.top = `${newY}px`;
-            }
-        });
-    }
-
     let fpsCounter;
     let fpsInterval, lastFrameTime, frames;
-    let fpsShown = false;
-
+    let isDraggingFPS = false, dragOffsetXFPS = 0, dragOffsetYFPS = 0;
     function createFPSCounter() {
         fpsCounter = document.createElement('div');
         fpsCounter.id = 'fps-counter';
         fpsCounter.className = 'counter';
         fpsCounter.textContent = 'FPS: 0';
         document.body.appendChild(fpsCounter);
-        
-        makeDraggable(fpsCounter);
+
+        fpsCounter.addEventListener('mousedown', e => {
+            isDraggingFPS = true;
+            dragOffsetXFPS = e.clientX - fpsCounter.getBoundingClientRect().left;
+            dragOffsetYFPS = e.clientY - fpsCounter.getBoundingClientRect().top;
+            fpsCounter.classList.add('dragging');
+            e.preventDefault();
+        });
+        window.addEventListener('mouseup', () => {
+            if (isDraggingFPS) {
+                isDraggingFPS = false;
+                fpsCounter.classList.remove('dragging');
+            }
+        });
+        window.addEventListener('mousemove', e => {
+            if (isDraggingFPS) {
+                let newX = e.clientX - dragOffsetXFPS;
+                let newY = e.clientY - dragOffsetYFPS;
+                const padding = 10;
+                newX = Math.min(window.innerWidth - fpsCounter.offsetWidth -
+padding,
+Math.max(padding, newX));
+                newY = Math.min(window.innerHeight - fpsCounter.offsetHeight - padding, Math.max(padding, newY));
+                fpsCounter.style.left = newX + 'px';
+                fpsCounter.style.top = newY + 'px';
+            }
+        });
     }
 
     function startFPSCounter() {
         if (!fpsCounter) createFPSCounter();
-        
         fpsInterval = 1000;
         lastFrameTime = performance.now();
         frames = 0;
@@ -1509,17 +1493,14 @@
         function update() {
             const now = performance.now();
             frames++;
-            
             if (now - lastFrameTime > fpsInterval) {
                 const fps = Math.round((frames * 1000) / (now - lastFrameTime));
                 fpsCounter.textContent = `FPS: ${fps}`;
                 lastFrameTime = now;
                 frames = 0;
             }
-            
             if (fpsCounter) requestAnimationFrame(update);
         }
-        
         requestAnimationFrame(update);
     }
 
@@ -1529,31 +1510,49 @@
             fpsCounter = null;
         }
     }
-
-    fpsBtn.addEventListener('click', () => {
-        if (fpsShown) {
-            stopFPSCounter();
-            fpsBtn.textContent = 'FPS Counter';
-            fpsShown = false;
-        } else {
-            startFPSCounter();
-            fpsBtn.textContent = 'Hide FPS Counter';
-            fpsShown = true;
-        }
-    });
-
     let cpsCounter;
     let cpsClicks = [];
+    let isDraggingCPS = false, dragOffsetXCPS = 0, dragOffsetYCPS = 0;
     let cpsIntervalId;
-    let cpsShown = false;
+    function createCPSCounter() {
+        cpsCounter = document.createElement('div');
+        cpsCounter.id = 'cps-counter';
+        cpsCounter.className = 'counter';
+        cpsCounter.textContent = 'CPS: 0';
+        document.body.appendChild(cpsCounter);
+
+        cpsCounter.addEventListener('mousedown', e => {
+            isDraggingCPS = true;
+            dragOffsetXCPS = e.clientX - cpsCounter.getBoundingClientRect().left;
+            dragOffsetYCPS = e.clientY - cpsCounter.getBoundingClientRect().top;
+            cpsCounter.classList.add('dragging');
+            e.preventDefault();
+        });
+        window.addEventListener('mouseup', () => {
+            if (isDraggingCPS) {
+                isDraggingCPS = false;
+                cpsCounter.classList.remove('dragging');
+            }
+        });
+        window.addEventListener('mousemove', e => {
+            if (isDraggingCPS) {
+                let newX = e.clientX - dragOffsetXCPS;
+                let newY = e.clientY - dragOffsetYCPS;
+                const padding = 10;
+                newX = Math.min(window.innerWidth - cpsCounter.offsetWidth - padding, Math.max(padding, newX));
+                newY = Math.min(window.innerHeight - cpsCounter.offsetHeight - padding, Math.max(padding, newY));
+                cpsCounter.style.left = newX + 'px';
+                cpsCounter.style.top = newY + 'px';
+            }
+        });
+        window.addEventListener('mousedown', cpsClickListener);
+    }
 
     function cpsClickListener(e) {
         if (e.button === 0) {
             cpsClicks.push(performance.now());
-            
             const cutoff = performance.now() - 1000;
             cpsClicks = cpsClicks.filter(ts => ts >= cutoff);
-            
             updateCPSCounter();
         }
     }
@@ -1564,22 +1563,9 @@
         }
     }
 
-    function createCPSCounter() {
-        cpsCounter = document.createElement('div');
-        cpsCounter.id = 'cps-counter';
-        cpsCounter.className = 'counter';
-        cpsCounter.textContent = 'CPS: 0';
-        document.body.appendChild(cpsCounter);
-        
-        makeDraggable(cpsCounter);
-        window.addEventListener('mousedown', cpsClickListener);
-    }
-
     function startCPSCounter() {
         if (!cpsCounter) createCPSCounter();
-        
         cpsClicks = [];
-        
         cpsIntervalId = setInterval(() => {
             const cutoff = performance.now() - 1000;
             cpsClicks = cpsClicks.filter(ts => ts >= cutoff);
@@ -1592,15 +1578,25 @@
             cpsCounter.remove();
             cpsCounter = null;
         }
-        
         window.removeEventListener('mousedown', cpsClickListener);
-        
-        if (cpsIntervalId) {
-            clearInterval(cpsIntervalId);
-            cpsIntervalId = null;
-        }
+        if (cpsIntervalId) clearInterval(cpsIntervalId);
     }
 
+    let fpsShown = false;
+    let cpsShown = false;
+    fpsBtn.addEventListener('click', () => {
+        if (fpsShown) {
+            stopFPSCounter();
+            fpsBtn.textContent = 'FPS Counter';
+            fpsShown = false;
+        } else {
+            startFPSCounter();
+            fpsBtn.textContent = 'Hide FPS Counter';
+
+     fpsShown = true;
+
+        }
+    });
     cpsBtn.addEventListener('click', () => {
         if (cpsShown) {
             stopCPSCounter();
@@ -1609,63 +1605,54 @@
         } else {
             startCPSCounter();
             cpsBtn.textContent = 'Hide CPS Counter';
-            cpsShown = true;
+
+     cpsShown = true;
+
         }
     });
-
     let realTimeCounter;
     let realTimeTooltip;
     let realTimeInterval;
     let realTimeShown = false;
-
     function createRealTimeCounter() {
         realTimeCounter = document.createElement('div');
         realTimeCounter.id = 'real-time-counter';
-        
-        Object.assign(realTimeCounter.style, {
-            position: 'fixed',
-            bottom: '10px',
-            right: '10px',
-            color: '#fff',
-            fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
-            fontWeight: '700',
-            fontSize: '22px',
-            userSelect: 'none',
-            zIndex: '9999',
-            cursor: 'default'
-        });
+        realTimeCounter.style.position = 'fixed';
+        realTimeCounter.style.bottom = '10px';
+        realTimeCounter.style.right = '10px';
+        realTimeCounter.style.color = '#fff';
+        realTimeCounter.style.fontFamily = '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
+        realTimeCounter.style.fontWeight = '700';
+        realTimeCounter.style.fontSize = '22px';
+        realTimeCounter.style.userSelect = 'none';
+        realTimeCounter.style.zIndex = '9999';
+        realTimeCounter.style.cursor = 'default';
 
         realTimeTooltip = document.createElement('div');
         realTimeTooltip.textContent = "Shows you the time so you don't have to exit Fullscreen";
-        
-        Object.assign(realTimeTooltip.style, {
-            position: 'absolute',
-            bottom: 'calc(100% + 8px)',
-            right: '0',
-            backgroundColor: 'black',
-            color: 'white',
-            padding: '6px 10px',
-            borderRadius: '6px',
-            fontSize: '12px',
-            whiteSpace: 'nowrap',
-            boxShadow: '0 0 6px rgba(0,0,0,0.8)',
-            opacity: '0',
-            pointerEvents: 'none',
-            transition: 'opacity 0.25s ease'
-        });
-
+        realTimeTooltip.style.position = 'absolute';
+        realTimeTooltip.style.bottom = 'calc(100% + 8px)';
+        realTimeTooltip.style.right = '0';
+        realTimeTooltip.style.backgroundColor = 'black';
+        realTimeTooltip.style.color = 'white';
+        realTimeTooltip.style.padding = '6px 10px';
+        realTimeTooltip.style.borderRadius = '6px';
+        realTimeTooltip.style.fontSize = '12px';
+        realTimeTooltip.style.whiteSpace = 'nowrap';
+        realTimeTooltip.style.boxShadow = '0 0 6px rgba(0,0,0,0.8)';
+        realTimeTooltip.style.opacity = '0';
+        realTimeTooltip.style.pointerEvents = 'none';
+        realTimeTooltip.style.transition = 'opacity 0.25s ease';
         realTimeCounter.appendChild(realTimeTooltip);
 
         realTimeCounter.addEventListener('mouseenter', () => {
             realTimeTooltip.style.opacity = '1';
             realTimeTooltip.style.pointerEvents = 'auto';
         });
-
         realTimeCounter.addEventListener('mouseleave', () => {
             realTimeTooltip.style.opacity = '0';
             realTimeTooltip.style.pointerEvents = 'none';
         });
-
         document.body.appendChild(realTimeCounter);
     }
 
@@ -1674,18 +1661,16 @@
         let hours = now.getHours();
         const minutes = now.getMinutes().toString().padStart(2, '0');
         const seconds = now.getSeconds().toString().padStart(2, '0');
-        
         const ampm = hours >= 12 ? 'PM' : 'AM';
         hours = hours % 12;
-        hours = hours ? hours : 12;
-        
+        hours = hours ?
+        hours : 12;
         realTimeCounter.textContent = `${hours}:${minutes}:${seconds} ${ampm}`;
         realTimeCounter.appendChild(realTimeTooltip);
     }
 
     function startRealTimeCounter() {
         if (!realTimeCounter) createRealTimeCounter();
-        
         updateRealTime();
         realTimeInterval = setInterval(updateRealTime, 1000);
     }
@@ -1695,7 +1680,6 @@
             realTimeCounter.remove();
             realTimeCounter = null;
         }
-        
         if (realTimeInterval) {
             clearInterval(realTimeInterval);
             realTimeInterval = null;
@@ -1709,14 +1693,16 @@
             realTimeShown = false;
         } else {
             startRealTimeCounter();
-            realTimeBtn.textContent = 'Hide Real Time';
+            realTimeBtn.textContent
+=
+'Hide Real Time';
             realTimeShown = true;
         }
     });
-
     const NEW_BACKGROUND_URL = "https://i.redd.it/i-made-some-wallpapers-using-shaders-v0-tgfd02iq0lba1.png?width=2880&format=png&auto=webp&s=b124065d9841d2ec52508000f7e896ec7d244839";
     const BACKGROUND_SELECTORS = ['img.chakra-image.css-rkihvp', 'img.chakra-image.css-mohuzh', '.css-aznra0'];
     
+// ======= CUSTOM BACKGROUND OBSERVER =======
 (function startBackgroundObserverPatched() {
     const selectors = [
         'img.chakra-image.css-rkihvp',
@@ -1733,7 +1719,7 @@
             el.style.height = "100vh";
             el.style.position = "fixed";
             el.style.zIndex = "-1";
-        } catch (e) { }
+        } catch (e) { /* ignore */ }
     }
 
     function applyToAll(url) {
@@ -1772,7 +1758,7 @@ const OLD_COIN_URL = "https://miniblox.io/assets/coin-D__IidTw.png";
     setTimeout(() => {
         document.querySelectorAll(`img[src="${OLD_COIN_URL}"]`).forEach(img => { img.src = NEW_COIN_URL; });
     }, 5000);
-
+    // --- FINAL SETUP ---
     window.addEventListener('beforeunload', () => {
         const currentSession = Date.now() - sessionStart;
         totalPlaytime += currentSession;
@@ -1781,3 +1767,5 @@ const OLD_COIN_URL = "https://miniblox.io/assets/coin-D__IidTw.png";
     setInterval(updatePlaytimeDisplay, 1000);
 
 })();
+
+
