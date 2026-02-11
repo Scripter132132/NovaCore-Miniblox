@@ -1445,7 +1445,7 @@
         }
     });
 
-    // Time Counters (FPS, CPS, Real Time)
+   // Time Counters (FPS, CPS, Real Time)
 
 function makeDraggable(element) {
     let isDragging = false;
@@ -1785,6 +1785,7 @@ const OLD_COIN_URL = "https://miniblox.io/assets/coin-D__IidTw.png";
     setInterval(updatePlaytimeDisplay, 1000);
 
 })();
+
 
 
 
