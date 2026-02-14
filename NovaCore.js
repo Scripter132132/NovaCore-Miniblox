@@ -2,7 +2,6 @@
     'use strict';
     document.title = '𝕸𝖎𝖓𝖎𝖇𝖑𝖔𝖝';
 
-    // --- Data Storage Helpers ---
     function loadData(key, defaultValue) {
         const saved = localStorage.getItem(`novacore_${key}`);
         return saved ? JSON.parse(saved) : defaultValue;
@@ -39,7 +38,6 @@
     }, 1000);
 }
 
-        // welcome message for the user who uses novacore lol -jouda
       (function() {
     'use strict';
 
@@ -78,7 +76,6 @@
 
 })();
     
-    // novacore clicks detector lol -jouda
     (function () {
     'use strict';
 
@@ -145,18 +142,15 @@
 })();
 
 
-    // --- Client State ---
     let totalPlaytime = loadData('playtime', 0);
     let sessionStart = Date.now();
     let menuKeybind = loadData('menuKey', '\\');
 
-    // --- Keystrokes State ---
     let isKeystrokesActive = false;
     let keystrokescontainer = null;
     let keyEventListeners = {};
     const KEY_UP_COLOR = 'rgba(128, 128, 128, 0.7)';
 
-    // --- CSS Block ---
     const style = document.createElement('style');
     style.textContent = `
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -190,7 +184,6 @@
         to {opacity: 0;}
     }
 
-    /* --- Keystrokes Module Styles --- */
     .keystroke-key {
         position: absolute;
         color: #ffffff;
@@ -208,8 +201,7 @@
         cursor: grab;
         user-select: none;
         transition: background-color 0.1s ease;
-        /* Define the dynamic DOWN color via a CSS variable */
-        --key-down-color: hsl(var(--nova-hue), 80%, 30%); /* Darker, saturated version of custom hue */
+        --key-down-color: hsl(var(--nova-hue), 80%, 30%);
     }
     #keystrokes-container {
         width: 300px;
@@ -223,9 +215,7 @@
         z-index: 10000;
         user-select: none;
     }
-    /* --- END Keystrokes Module Styles --- */
 
-    /* --- Milestone Notification Style --- */
     #nova-milestone-notification {
         position: fixed;
         bottom: 20px;
@@ -248,9 +238,7 @@
         opacity: 1;
         transform: translateX(0);
     }
-    /* --- END Milestone Notification Style --- */
 
-    /* --- START: Menu Credits Style --- */
     #nova-menu-credits {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         font-size: 14px;
@@ -260,11 +248,8 @@
         color: hsl(var(--nova-hue), var(--nova-saturation), 70%); 
         text-shadow: 0 0 5px hsla(var(--nova-hue), var(--nova-saturation), 50%, 0.5);
     }
-    /* --- END Menu Credits Style --- */
 
-    /* --- START: CSS Variables for Color Customization --- */
     :root {
-        /* Default color for buttons (Cyan/Aqua Blue) */
         --nova-hue: 180;
         --nova-saturation: 100%;
         --nova-lightness: 50%;
@@ -278,7 +263,6 @@
         font-weight: bold !important;
     }
 
-    /* Selectors cover most in-game buttons and UI elements */
     .chakra-button.css-cuh8pi, .chakra-button.css-32lhf4, .chakra-button.css-5ov7ui,
     .chakra-button.css-18wnugv, .chakra-button.css-he6upe, .chakra-button.css-1oxqv3t,
     .chakra-button.css-1dkorm4, .css-10y588r, button.chakra-button.css-livqej,
@@ -293,7 +277,6 @@
     .css-1f34n7d, .css-tncl4j, .css-1tyymsb, .css-ol7umz, .chakra-button.css-12t4nq4 {
 
         padding: 10px 20px !important;
-        /* Using HSL (Hue, Saturation, Lightness) for easy color changes */
         background-color: hsla(var(--nova-hue), var(--nova-saturation), var(--nova-lightness), 0.2) !important;
         color: white !important;
         border: 1px solid hsla(var(--nova-hue), var(--nova-saturation), var(--nova-lightness), 0.6) !important;
@@ -392,7 +375,6 @@
         font-weight: 900;
         font-size: 2.5rem;
 
-        /* --- Dynamic Color for Header --- */
         color: hsl(var(--nova-hue), var(--nova-saturation), 70%);
         text-shadow:
             0 0 8px hsl(var(--nova-hue), var(--nova-saturation), 50%),
@@ -400,7 +382,6 @@
             0 0 30px hsl(var(--nova-hue), var(--nova-saturation), 50%),
             0 0 40px hsl(var(--nova-hue), var(--nova-saturation), 50%),
             0 0 50px hsl(var(--nova-hue), var(--nova-saturation), 50%);
-        /* --- End Dynamic Color --- */
 
         user-select: none;
         z-index: 100000000;
@@ -510,7 +491,6 @@
         position: fixed;
         top: 50px;
         left: 50px;
-        /* Use HSL variables for the main counter color */
         background: hsla(var(--nova-hue), var(--nova-saturation), var(--nova-lightness), 0.85);
         color: #000;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -518,7 +498,6 @@
         font-size: 1.25rem;
         padding: 8px 14px;
         border-radius: 12px;
-        /* Use HSL variables for the box-shadow glow */
         box-shadow:
             0 0 8px hsla(var(--nova-hue), var(--nova-saturation), var(--nova-lightness), 0.7),
             inset 0 0 8px hsla(var(--nova-hue), var(--nova-saturation), var(--nova-lightness), 0.5);
@@ -535,7 +514,6 @@
         user-select: none;
     }
 
-    /* --- Styles for Playtime Module --- */
     #nova-menu-content {
         max-height: 70vh;
         overflow-y: auto;
@@ -546,7 +524,6 @@
     #nova-menu-content::-webkit-scrollbar-thumb { background: #00ffff; border-radius: 8px; }
     #nova-menu-content::-webkit-scrollbar-thumb:hover { background: #00dddd; }
 
-    /* Gold Theme Styles */
     #nova-menu-header.gold {
         color: #ffd700;
         text-shadow: 0 0 8px #ffd700, 0 0 20px #ffd700, 0 0 30px #ffd700, 0 0 40px #ffd700, 0 0 50px #ffd700;
@@ -588,7 +565,6 @@
  */
     document.head.appendChild(style);
 
-    // --- Helper Functions ---
     function formatPlaytime(ms) {
         const seconds = Math.floor(ms / 1000);
         const minutes = Math.floor(seconds / 60);
@@ -654,7 +630,6 @@
         }, 5000);
     }
 
-    // --- Crosshair Module Logic Definitions ---
     let crosshairContainer;
     let currentColor, currentDesign;
     let f5PressCount, otherKeysManualHide;
@@ -826,9 +801,7 @@
         }
     }
 
-    // --- Crosshair Initialization ---
     function initializeCrosshairModule() {
-        // --- 1. State Initialization ---
         crosshairContainer = document.createElement('div');
         crosshairContainer.id = 'custom-crosshair-container';
         Object.assign(crosshairContainer.style, {
@@ -848,7 +821,6 @@
         otherKeysManualHide = false;
         updateCrosshair();
 
-        // --- 2. Menu Element Creation ---
         const crosshairControlsTitle = document.createElement('div');
         crosshairControlsTitle.className = 'nova-menu-btn static';
         crosshairControlsTitle.textContent = '🎯 Custom Crosshair';
@@ -928,7 +900,6 @@
         new MutationObserver(() => { requestAnimationFrame(checkCrosshair); }).observe(document.body, { childList: true, subtree: true });
     }
 
-    // --- UI Elements (Intro) ---
     const overlay = document.createElement('div');
     overlay.id = 'nova-intro';
     const button = document.createElement('div');
@@ -964,7 +935,6 @@
     document.body.appendChild(hintText);
 
     updateKeybindDisplay(menuKeybind);
-    // Intro Fade-out
     setTimeout(() => {
         overlay.style.animation = 'fadeOut 1s ease forwards';
         setTimeout(() => {
@@ -972,13 +942,11 @@
             persistentHeader.classList.add('visible');
             hintText.style.opacity = '1';
             setTimeout(() => {
-                hintText.style.opacity
-= '0';
+                hintText.style.opacity = '0';
             }, 4000);
         }, 1000);
 
     }, 7000);
-    // --- UI Elements (Menu) ---
     const menuOverlay = document.createElement('div');
     menuOverlay.id = 'nova-menu-overlay';
 
@@ -1057,7 +1025,6 @@
             }
         }, 5000);
     });
-    // Standard Modules
     const keystrokesBtn = document.createElement('button');
     keystrokesBtn.className = 'nova-menu-btn';
     keystrokesBtn.textContent = 'Keystrokes';
@@ -1081,7 +1048,6 @@
     fullscreenBtn.className = 'nova-menu-btn';
     fullscreenBtn.textContent = 'Auto Fullscreen';
     menuContent.appendChild(fullscreenBtn);
-    // Color Customizer Section
     const colorCustomizerContainer = document.createElement('div');
     colorCustomizerContainer.style.padding = '10px 0';
 
@@ -1191,14 +1157,12 @@
     const notification = document.createElement('div');
     notification.id = 'nova-milestone-notification';
     document.body.appendChild(notification);
-    // --- Playtime & Gold Reward Logic ---
     function updatePlaytimeDisplay() {
         const currentSession = Date.now() - sessionStart;
         const total = totalPlaytime + currentSession;
         playtimeDisplay.textContent = `⏱️ ${formatPlaytime(total)}`;
 
         const hours = total / (1000 * 60 * 60);
-        // --- Milestone Logic ---
         if (hours >= 168) {
             menuHeader.classList.add('gold');
             menuContent.classList.add('gold');
@@ -1208,7 +1172,6 @@
             bindingInput.style.borderColor = '#ffd700';
             bindingInput.style.color = '#ffd700';
             document.querySelectorAll('.nova-menu-btn:not(.static)').forEach(btn => btn.classList.add('gold'));
-            // Notification Logic
             const goldRewardClaimed = loadData('goldRewardClaimed', false);
             if (!goldRewardClaimed) {
                 const notification = document.getElementById('nova-milestone-notification');
@@ -1226,7 +1189,6 @@
         }
     }
 
-    // --- Event Listeners and Module Setup ---
     window.addEventListener('load', () => {
         const slider = document.getElementById('nova-color-slider');
         const display = document.getElementById('nova-color-display');
@@ -1288,7 +1250,6 @@
             fullscreenBtn.textContent = 'Auto Fullscreen';
         }
     });
-    // --- Keystrokes Logic ---
     function createKey(text, style = {}) {
         const key = document.createElement('div');
         key.textContent = text;
@@ -1304,7 +1265,6 @@
         keystrokescontainer = document.createElement('div');
         keystrokescontainer.id = 'keystrokes-container';
 
-        // Load or default position
         const savedLeft = loadData('keystrokesLeft', window.innerWidth / 2);
         const savedTop = loadData('keystrokesTop', window.innerHeight / 2);
         keystrokescontainer.style.left = savedLeft + 'px';
@@ -1321,7 +1281,6 @@
         keystrokescontainer.append(wkey, akey, skey, dkey, lmb, rmb, space);
         document.body.appendChild(keystrokescontainer);
 
-        // --- Dragging Logic ---
         let isDragging = false;
         let offsetX, offsetY;
 
@@ -1352,14 +1311,12 @@
         document.addEventListener('mousemove', onDrag);
         document.addEventListener('mouseup', endDrag);
 
-        // Save listeners to remove them later
         keyEventListeners.dragListeners = [
             { target: keystrokescontainer, type: 'mousedown', listener: startDrag },
             { target: document, type: 'mousemove', listener: onDrag },
             { target: document, type: 'mouseup', listener: endDrag }
         ];
 
-        // --- Key/Mouse Press Logic ---
         const getDownColor = () => {
             return window.getComputedStyle(wkey).getPropertyValue('--key-down-color');
         };
@@ -1387,17 +1344,17 @@
 
         const handleMouseDown = (event) => {
             const downColor = getDownColor();
-            if (event.button === 0) { // Left Click
+            if (event.button === 0) {
                 lmb.style.backgroundColor = downColor;
-            } else if (event.button === 2) { // Right Click
+            } else if (event.button === 2) {
                 rmb.style.backgroundColor = downColor;
             }
         };
 
         const handleMouseUp = (event) => {
-            if (event.button === 0) { // Left Click
+            if (event.button === 0) {
                 lmb.style.backgroundColor = KEY_UP_COLOR;
-            } else if (event.button === 2) { // Right Click
+            } else if (event.button === 2) {
                 rmb.style.backgroundColor = KEY_UP_COLOR;
             }
         };
@@ -1436,7 +1393,6 @@
         keystrokesBtn.textContent = 'Keystrokes';
     }
 
-    // --- Add Listeners to Menu Buttons ---
     keystrokesBtn.addEventListener('click', () => {
         if (isKeystrokesActive) {
             stopKeystrokes();
@@ -1445,7 +1401,6 @@
         }
     });
 
-    // --- Time Counters (FPS, CPS, Real Time) ---
     let fpsCounter;
     let fpsInterval, lastFrameTime, frames;
     let isDraggingFPS = false, dragOffsetXFPS = 0, dragOffsetYFPS = 0;
@@ -1474,9 +1429,7 @@
                 let newX = e.clientX - dragOffsetXFPS;
                 let newY = e.clientY - dragOffsetYFPS;
                 const padding = 10;
-                newX = Math.min(window.innerWidth - fpsCounter.offsetWidth -
-padding,
-Math.max(padding, newX));
+                newX = Math.min(window.innerWidth - fpsCounter.offsetWidth - padding, Math.max(padding, newX));
                 newY = Math.min(window.innerHeight - fpsCounter.offsetHeight - padding, Math.max(padding, newY));
                 fpsCounter.style.left = newX + 'px';
                 fpsCounter.style.top = newY + 'px';
@@ -1592,9 +1545,7 @@ Math.max(padding, newX));
         } else {
             startFPSCounter();
             fpsBtn.textContent = 'Hide FPS Counter';
-
      fpsShown = true;
-
         }
     });
     cpsBtn.addEventListener('click', () => {
@@ -1605,9 +1556,7 @@ Math.max(padding, newX));
         } else {
             startCPSCounter();
             cpsBtn.textContent = 'Hide CPS Counter';
-
      cpsShown = true;
-
         }
     });
     let realTimeCounter;
@@ -1663,8 +1612,7 @@ Math.max(padding, newX));
         const seconds = now.getSeconds().toString().padStart(2, '0');
         const ampm = hours >= 12 ? 'PM' : 'AM';
         hours = hours % 12;
-        hours = hours ?
-        hours : 12;
+        hours = hours ? hours : 12;
         realTimeCounter.textContent = `${hours}:${minutes}:${seconds} ${ampm}`;
         realTimeCounter.appendChild(realTimeTooltip);
     }
@@ -1693,16 +1641,13 @@ Math.max(padding, newX));
             realTimeShown = false;
         } else {
             startRealTimeCounter();
-            realTimeBtn.textContent
-=
-'Hide Real Time';
+            realTimeBtn.textContent = 'Hide Real Time';
             realTimeShown = true;
         }
     });
     const NEW_BACKGROUND_URL = "https://i.redd.it/i-made-some-wallpapers-using-shaders-v0-tgfd02iq0lba1.png?width=2880&format=png&auto=webp&s=b124065d9841d2ec52508000f7e896ec7d244839";
     const BACKGROUND_SELECTORS = ['img.chakra-image.css-rkihvp', 'img.chakra-image.css-mohuzh', '.css-aznra0'];
     
-// ======= CUSTOM BACKGROUND OBSERVER =======
 (function startBackgroundObserverPatched() {
     const selectors = [
         'img.chakra-image.css-rkihvp',
@@ -1719,7 +1664,7 @@ Math.max(padding, newX));
             el.style.height = "100vh";
             el.style.position = "fixed";
             el.style.zIndex = "-1";
-        } catch (e) { /* ignore */ }
+        } catch (e) {}
     }
 
     function applyToAll(url) {
@@ -1758,7 +1703,6 @@ const OLD_COIN_URL = "https://miniblox.io/assets/coin-D__IidTw.png";
     setTimeout(() => {
         document.querySelectorAll(`img[src="${OLD_COIN_URL}"]`).forEach(img => { img.src = NEW_COIN_URL; });
     }, 5000);
-    // --- FINAL SETUP ---
     window.addEventListener('beforeunload', () => {
         const currentSession = Date.now() - sessionStart;
         totalPlaytime += currentSession;
@@ -1767,5 +1711,3 @@ const OLD_COIN_URL = "https://miniblox.io/assets/coin-D__IidTw.png";
     setInterval(updatePlaytimeDisplay, 1000);
 
 })();
-
-
